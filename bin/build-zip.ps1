@@ -45,6 +45,7 @@ New-Item -ItemType Directory -Path $StagingDir -Force | Out-Null
 # 3. Copie des fichiers éligibles
 $ItemsToCopy = @(
     "woo-search-intelligence-soyoo.php",
+    "uninstall.php",
     "README.md",
     "includes",
     "assets",

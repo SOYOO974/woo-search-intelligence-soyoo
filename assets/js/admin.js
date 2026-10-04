@@ -1,208 +1,211 @@
 /**
- * Contrôleur d'interface — WooCommerce Search Intelligence by SOYOO
+ * Contrôleur d'administration — Woo Search Intelligence by SOYOO
+ *
+ * Toutes les requêtes passent par post() : nonce, gestion des erreurs réseau
+ * et des sessions expirées (403 / -1), messages serveur affichés en toast.
  */
-
-jQuery(document).ready(function($) {
+jQuery(function ($) {
   'use strict';
 
-  var config = window.wooSearchAdmin || {
-    ajaxUrl: '/wp-admin/admin-ajax.php',
-    nonce: '',
-    i18n: {}
-  };
+  var config = window.wooSearchAdmin || { ajaxUrl: window.ajaxurl || '/wp-admin/admin-ajax.php', nonce: '', i18n: {} };
+  var i18n = config.i18n || {};
+
+  /* ------------------------------------------------------------------
+   * Utilitaires
+   * ---------------------------------------------------------------- */
+
+  function toast(message, isError) {
+    $('.woo-toast').remove();
+    var $t = $('<div>', { 'class': 'woo-toast' + (isError ? ' is-error' : ''), role: 'status', text: message }).appendTo('body');
+    setTimeout(function () { $t.fadeOut(300, function () { $t.remove(); }); }, isError ? 5000 : 3200);
+  }
+
+  function messageOf(res, fallback) {
+    return res && res.data && res.data.message ? res.data.message : (fallback || i18n.error || 'Erreur');
+  }
 
   /**
-   * Système Toast Notification
+   * POST admin-ajax avec nonce. Retourne une promesse résolue avec res.data
+   * en cas de succès, rejetée avec un message lisible sinon.
    */
-  function showToast(message, isError) {
-    $('.woo-toast').remove();
-    var $toast = $('<div>', {
-      class: 'woo-toast' + (isError ? ' is-error' : ''),
-      text: message
-    }).appendTo('body');
+  function post(action, data) {
+    var payload = $.extend({}, data || {}, { action: 'woo_search_' + action, nonce: config.nonce });
+    var d = $.Deferred();
 
-    setTimeout(function() {
-      $toast.fadeOut(300, function() {
-        $(this).remove();
+    $.ajax({ url: config.ajaxUrl, method: 'POST', data: payload, dataType: 'json', timeout: 120000 })
+      .done(function (res) {
+        if (res && res.success) {
+          d.resolve(res.data || {});
+        } else {
+          d.reject(messageOf(res));
+        }
+      })
+      .fail(function (xhr) {
+        var res = xhr.responseJSON;
+        if (xhr.status === 403 || xhr.responseText === '-1' || xhr.responseText === '0') {
+          d.reject(res && res.data && res.data.message ? res.data.message : (i18n.sessionExpired || 'Session expirée.'));
+        } else {
+          d.reject(messageOf(res));
+        }
       });
-    }, 3200);
+
+    return d.promise();
   }
 
-  function escapeHtml(str) {
-    return $('<div>').text(str || '').html();
+  function busy($btn, state) {
+    $btn.prop('disabled', state).toggleClass('is-busy', state);
   }
 
-  /* ==========================================================================
-     1. RÉGLAGES & NOTIFICATIONS
-     ========================================================================== */
+  function status($el, text, type) {
+    $el.removeClass('is-good is-bad').addClass(type === 'ok' ? 'is-good' : (type === 'err' ? 'is-bad' : '')).text(text || '');
+  }
 
-  // Toggle affichage des réglages d'alertes
-  $('#woo_enable_alerts').on('change', function() {
-    if ($(this).is(':checked')) {
-      $('.woo-alerts-options').slideDown(200);
-    } else {
-      $('.woo-alerts-options').slideUp(200);
-    }
+  function reloadSoon(delay) {
+    setTimeout(function () { window.location.reload(); }, delay || 900);
+  }
+
+  function setProgress(prefix, percent, label) {
+    var p = Math.max(0, Math.min(100, parseInt(percent, 10) || 0));
+    $('#' + prefix + '-fill').css('width', p + '%');
+    $('#' + prefix + '-text').text(label || p + '%');
+  }
+
+  /* ------------------------------------------------------------------
+   * 1. Paramètres
+   * ---------------------------------------------------------------- */
+
+  $('#woo_enable_alerts').on('change', function () {
+    $('.woo-alerts-options')[this.checked ? 'slideDown' : 'slideUp'](200);
   });
 
-  // Toggle mode seuil vs hebdomadaire
-  $('input[name="alert_mode"]').on('change', function() {
-    if ($(this).val() === 'threshold') {
-      $('#woo_threshold_group').slideDown(200);
-    } else {
-      $('#woo_threshold_group').slideUp(200);
-    }
+  $('input[name="alert_mode"]').on('change', function () {
+    $('#woo_threshold_group')[this.value === 'threshold' ? 'slideDown' : 'slideUp'](200);
   });
 
-  // Sauvegarde des réglages
-  $('#woo-settings-form').on('submit', function(e) {
+  $('#woo-settings-form').on('submit', function (e) {
     e.preventDefault();
     var $btn = $('#woo-save-settings-btn');
     var $status = $('#woo-save-status');
+    var data = {};
 
-    $btn.prop('disabled', true);
-    $status.css('color', '#64748b').text(config.i18n.saving || 'Enregistrement...');
+    $.each($(this).serializeArray(), function (_, field) { data[field.name] = field.value; });
 
-    var formData = $(this).serializeArray();
-    formData.push({ name: 'action', value: 'woo_search_save_settings' });
-    formData.push({ name: 'nonce', value: config.nonce });
+    busy($btn, true);
+    status($status, i18n.saving || '…');
 
-    $.post(config.ajaxUrl, formData, function(res) {
-      $btn.prop('disabled', false);
-      if (res.success) {
-        $status.css('color', '#059669').text(res.data.message || 'Enregistré !');
-        showToast(res.data.message || 'Paramètres enregistrés.');
-        setTimeout(function() {
-          $status.text('');
-        }, 3000);
-      } else {
-        $status.css('color', '#dc2626').text(res.data.message || 'Erreur');
-        showToast(res.data.message || 'Erreur', true);
-      }
-    }).fail(function() {
-      $btn.prop('disabled', false);
-      $status.css('color', '#dc2626').text('Erreur réseau');
-      showToast('Erreur de connexion', true);
-    });
+    post('save_settings', data)
+      .done(function (res) {
+        status($status, res.message, 'ok');
+        toast(res.message);
+        setTimeout(function () { status($status, ''); }, 3000);
+      })
+      .fail(function (msg) {
+        status($status, msg, 'err');
+        toast(msg, true);
+      })
+      .always(function () { busy($btn, false); });
   });
 
-  // Envoi d'un e-mail de test
-  $('#woo-btn-test-email').on('click', function() {
+  $('#woo-btn-test-email').on('click', function () {
     var $btn = $(this);
     var $status = $('#woo-test-email-status');
-    var email = $('#woo_alert_email').val();
 
-    $btn.prop('disabled', true);
-    $status.css('color', '#64748b').text('Envoi en cours...');
+    busy($btn, true);
+    status($status, '…');
 
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_test_email',
-      email: email,
-      nonce: config.nonce
-    }, function(res) {
-      $btn.prop('disabled', false);
-      if (res.success) {
-        $status.css('color', '#059669').text('✓ E-mail envoyé avec succès !');
-        showToast('E-mail de test envoyé !');
-      } else {
-        $status.css('color', '#dc2626').text('✗ ' + (res.data.message || 'Échec'));
-        showToast(res.data.message || 'Échec d\'envoi', true);
-      }
-    });
+    post('test_email', { email: $('#woo_alert_email').val() })
+      .done(function (res) { status($status, res.message, 'ok'); })
+      .fail(function (msg) { status($status, msg, 'err'); })
+      .always(function () { busy($btn, false); });
   });
 
-  // Purge du cache Transients
-  $('#woo-btn-clear-cache').on('click', function() {
+  $('#woo-btn-clear-cache').on('click', function () {
     var $btn = $(this);
-    $btn.prop('disabled', true).text('Purge en cours...');
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_clear_cache',
-      nonce: config.nonce
-    }, function(res) {
-      $btn.prop('disabled', false).text('🧹 Vider le cache de recherche');
-      if (res.success) {
-        showToast(res.data.message || 'Cache vidé avec succès.');
-      }
-    });
+    busy($btn, true);
+    post('clear_cache')
+      .done(function (res) { toast(res.message); })
+      .fail(function (msg) { toast(msg, true); })
+      .always(function () { busy($btn, false); });
   });
 
-  /* ==========================================================================
-     2. MIGRATION BATCHÉE DEPUIS SEARCH ANALYTICS FOR WP
-     ========================================================================== */
+  /* ------------------------------------------------------------------
+   * 2. Reconstruction de l'index (lots séquentiels avec curseur)
+   * ---------------------------------------------------------------- */
 
-  $('#woo-btn-start-import').on('click', function() {
-    var $btn = $(this);
-    var $container = $('#woo-import-progress-container');
-    var $fill = $('#woo-import-progress-fill');
-    var $text = $('#woo-import-progress-text');
-    var shouldReset = $('#woo-import-reset-check').is(':checked') ? 1 : 0;
-
-    $btn.prop('disabled', true).text('Migration en cours...');
-    $container.slideDown(200);
-    $fill.css('width', '2%');
-    $text.text('Démarrage de la migration...');
-
-    function runBatch(offset, isFirst) {
-      $.post(config.ajaxUrl, {
-        action: 'woo_search_import_batch',
-        offset: offset,
-        batch_size: 250,
-        reset: isFirst && shouldReset ? 1 : 0,
-        nonce: config.nonce
-      }, function(res) {
-        if (!res.success) {
-          $btn.prop('disabled', false).text('Reprendre la migration');
-          showToast(res.data.message || 'Erreur pendant l\'import', true);
-          return;
-        }
-
-        var data = res.data;
-        $fill.css('width', data.percent + '%');
-        $text.text(data.percent + '% (' + data.new_offset + ' / ' + data.total + ')');
-
-        if (!data.is_finished && data.new_offset < data.total) {
-          runBatch(data.new_offset, false);
-        } else {
-          $fill.css('width', '100%');
-          $text.text('100% (Terminé !)');
-          $btn.text('✓ Données synchronisées');
-          showToast(data.message || 'Migration terminée !');
-          setTimeout(function() {
-            location.reload();
-          }, 1400);
-        }
-      }).fail(function() {
-        $btn.prop('disabled', false).text('Reprendre la migration');
-        showToast('Erreur réseau lors du lot d\'importation.', true);
-      });
+  $('#woo-btn-rebuild-index').on('click', function () {
+    if (!window.confirm(i18n.confirmRebuild || 'Reconstruire l\'index ?')) {
+      return;
     }
 
-    runBatch(0, true);
+    var $btn = $(this);
+    busy($btn, true);
+    $('#woo-index-progress').show();
+    setProgress('woo-index-progress', 0);
+
+    (function step(cursor) {
+      post('index_batch', { cursor: cursor })
+        .done(function (res) {
+          setProgress('woo-index-progress', res.percent, (res.percent || 0) + '% (' + (res.processed || 0) + ' / ' + (res.total || 0) + ')');
+          if (res.done) {
+            toast('✓ ' + (res.total || 0));
+            reloadSoon();
+          } else {
+            step(res.cursor);
+          }
+        })
+        .fail(function (msg) {
+          toast(msg, true);
+          busy($btn, false);
+        });
+    })(0);
   });
 
-  /* ==========================================================================
-     3. SYNONYMES : FILTRAGE, AJOUT, ÉDITION INLINE, SUPPRESSION
-     ========================================================================== */
+  /* ------------------------------------------------------------------
+   * 3. Migration Search Analytics for WP
+   * ---------------------------------------------------------------- */
+
+  $('#woo-btn-start-import').on('click', function () {
+    var $btn = $(this);
+    var reset = $('#woo-import-reset-check').is(':checked') ? 1 : 0;
+
+    busy($btn, true);
+    $('#woo-import-progress-container').show();
+    setProgress('woo-import-progress', 0);
+
+    (function step(cursor, done, first) {
+      post('import_batch', { cursor: cursor, done: done, reset: first ? reset : 0 })
+        .done(function (res) {
+          setProgress('woo-import-progress', res.percent, (res.percent || 0) + '% (' + (res.done || 0) + ' / ' + (res.total || 0) + ')');
+          if (res.is_finished) {
+            toast(res.message || '✓');
+            reloadSoon(1200);
+          } else {
+            step(res.cursor, res.done, false);
+          }
+        })
+        .fail(function (msg) {
+          toast(msg, true);
+          busy($btn, false);
+        });
+    })(0, 0, true);
+  });
+
+  /* ------------------------------------------------------------------
+   * 4. Synonymes
+   * ---------------------------------------------------------------- */
 
   function filterSynonyms() {
-    var query = ($('#woo-synonyms-filter-input').val() || '').toLowerCase().trim();
-    var type = $('#woo-synonyms-filter-type').val();
+    var q = ($('#woo-synonyms-filter-input').val() || '').toLowerCase().trim();
+    var type = $('#woo-synonyms-filter-type').val() || '';
     var visible = 0;
 
-    $('#woo-synonyms-table tbody tr:not(.woo-empty-row)').each(function() {
-      var from = ($(this).attr('data-from') || '').toLowerCase();
-      var to = ($(this).attr('data-to') || '').toLowerCase();
-      var rType = $(this).attr('data-type') || 'expand';
-
-      var matchQuery = !query || from.indexOf(query) !== -1 || to.indexOf(query) !== -1;
-      var matchType = !type || rType === type;
-
-      if (matchQuery && matchType) {
-        $(this).show();
+    $('#woo-synonyms-table tbody tr[data-id]').each(function () {
+      var $row = $(this);
+      var text = (String($row.data('from')) + ' ' + String($row.data('to'))).toLowerCase();
+      var show = (!q || text.indexOf(q) !== -1) && (!type || $row.data('type') === type);
+      $row.toggle(show);
+      if (show) {
         visible++;
-      } else {
-        $(this).hide();
       }
     });
 
@@ -212,316 +215,245 @@ jQuery(document).ready(function($) {
   $('#woo-synonyms-filter-input').on('input', filterSynonyms);
   $('#woo-synonyms-filter-type').on('change', filterSynonyms);
 
-  // Ajout rapide d'un synonyme
-  $('#woo-add-synonym-form').on('submit', function(e) {
+  $('#woo-add-synonym-form').on('submit', function (e) {
     e.preventDefault();
-    var from = $('#woo_from_term').val().trim();
-    var to = $('#woo_to_term').val().trim();
-    var type = $('#woo_rule_type').val();
     var $btn = $('#woo-btn-add-synonym');
+    busy($btn, true);
 
-    if (!from || !to) return;
-
-    $btn.prop('disabled', true);
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_add_synonym',
-      from: from,
-      to: to,
-      type: type,
-      nonce: config.nonce
-    }, function(res) {
-      $btn.prop('disabled', false);
-      if (res.success) {
-        showToast(res.data.message || 'Synonyme ajouté !');
-        setTimeout(function() {
-          location.reload();
-        }, 800);
-      } else {
-        showToast(res.data.message || 'Erreur', true);
-      }
-    });
+    post('add_synonym', {
+      from: $('#woo_from_term').val(),
+      to: $('#woo_to_term').val(),
+      type: $('#woo_rule_type').val()
+    })
+      .done(function (res) {
+        toast(res.message);
+        // Nettoie le préremplissage ?from=&to= pour éviter une double soumission au rechargement.
+        var url = new URL(window.location.href);
+        url.searchParams.delete('from');
+        url.searchParams.delete('to');
+        setTimeout(function () { window.location.href = url.toString(); }, 700);
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
   });
 
-  // Édition en ligne d'un synonyme (Inline Edit)
-  $(document).on('click', '.woo-edit-synonym-btn', function() {
+  $('#woo-synonyms-table').on('click', '.woo-edit-synonym-btn', function () {
     var $row = $(this).closest('tr');
-    if ($row.hasClass('is-editing')) return;
+    if ($row.hasClass('is-editing')) {
+      return;
+    }
 
-    var index = $row.attr('data-index');
-    var from = $row.attr('data-from') || '';
-    var to = $row.attr('data-to') || '';
-    var type = $row.attr('data-type') || 'expand';
+    $row.addClass('is-editing').data('html', $row.html());
 
-    $row.addClass('is-editing').data('orig-html', $row.html());
+    var type = $row.data('type');
+    var $from = $('<input>', { type: 'text', 'class': 'woo-inline-input js-from', value: String($row.data('from')) });
+    var $to = $('<input>', { type: 'text', 'class': 'woo-inline-input js-to', value: String($row.data('to')) });
+    var $type = $('<select>', { 'class': 'js-type' })
+      .append($('<option>', { value: 'expand', text: i18n.expand || 'Expansion', selected: type === 'expand' }))
+      .append($('<option>', { value: 'replace', text: i18n.replace || 'Remplacement', selected: type === 'replace' }));
+    var $actions = $('<td>', { 'class': 'woo-col-actions' })
+      .append($('<button>', { type: 'button', 'class': 'woo-btn woo-btn-primary woo-btn-xs js-save', text: i18n.save || 'OK' }))
+      .append(' ')
+      .append($('<button>', { type: 'button', 'class': 'woo-btn woo-btn-secondary woo-btn-xs js-cancel', text: i18n.cancel || 'Annuler' }));
 
-    $row.html([
-      '<td><input type="text" class="woo-edit-from regular-text" value="' + escapeHtml(from) + '" style="width:100%; height:32px;"></td>',
-      '<td><input type="text" class="woo-edit-to regular-text" value="' + escapeHtml(to) + '" style="width:100%; height:32px;"></td>',
-      '<td><select class="woo-edit-type" style="height:32px; width:100%;"><option value="replace"' + (type === 'replace' ? ' selected' : '') + '>Remplacement</option><option value="expand"' + (type === 'expand' ? ' selected' : '') + '>Expansion</option></select></td>',
-      '<td style="text-align:right; white-space:nowrap;">',
-      '  <button type="button" class="woo-btn woo-btn-primary woo-save-edit-btn" data-index="' + index + '" style="padding:4px 10px; font-size:12px; margin-right:4px;">Enregistrer</button>',
-      '  <button type="button" class="woo-btn woo-btn-secondary woo-cancel-edit-btn" style="padding:4px 10px; font-size:12px;">Annuler</button>',
-      '</td>'
-    ].join(''));
+    $row.empty()
+      .append($('<td>').append($from))
+      .append($('<td>').append($to))
+      .append($('<td>').append($type))
+      .append($actions);
+
+    $from.trigger('focus');
   });
 
-  $(document).on('click', '.woo-cancel-edit-btn', function() {
+  $('#woo-synonyms-table').on('click', '.js-cancel', function () {
     var $row = $(this).closest('tr');
-    $row.removeClass('is-editing').html($row.data('orig-html'));
+    $row.html($row.data('html')).removeClass('is-editing');
   });
 
-  $(document).on('click', '.woo-save-edit-btn', function() {
-    var $row = $(this).closest('tr');
-    var index = $(this).data('index');
-    var from = $row.find('.woo-edit-from').val().trim();
-    var to = $row.find('.woo-edit-to').val().trim();
-    var type = $row.find('.woo-edit-type').val();
-
-    if (!from || !to) return;
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_edit_synonym',
-      index: index,
-      from: from,
-      to: to,
-      type: type,
-      nonce: config.nonce
-    }, function(res) {
-      if (res.success) {
-        showToast(res.data.message || 'Modifié');
-        setTimeout(function() {
-          location.reload();
-        }, 700);
-      } else {
-        showToast(res.data.message || 'Erreur', true);
-      }
-    });
+  $('#woo-synonyms-table').on('keydown', '.woo-inline-input', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      $(this).closest('tr').find('.js-save').trigger('click');
+    } else if (e.key === 'Escape') {
+      $(this).closest('tr').find('.js-cancel').trigger('click');
+    }
   });
 
-  // Suppression d'un synonyme
-  $(document).on('click', '.woo-delete-synonym-btn', function() {
-    if (!confirm(config.i18n.confirmDeleteSyn || 'Supprimer ce synonyme ?')) return;
+  $('#woo-synonyms-table').on('click', '.js-save', function () {
+    var $btn = $(this);
+    var $row = $btn.closest('tr');
+    busy($btn, true);
 
-    var $row = $(this).closest('tr');
-    var index = $(this).data('index');
+    post('edit_synonym', {
+      id: $row.data('id'),
+      from: $row.find('.js-from').val(),
+      to: $row.find('.js-to').val(),
+      type: $row.find('.js-type').val()
+    })
+      .done(function (res) {
+        toast(res.message);
+        reloadSoon(600);
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
+  });
 
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_delete_synonym',
-      index: index,
-      nonce: config.nonce
-    }, function(res) {
-      if (res.success) {
-        $row.fadeOut(250, function() {
-          $(this).remove();
+  $('#woo-synonyms-table').on('click', '.woo-delete-synonym-btn', function () {
+    if (!window.confirm(i18n.confirmDeleteSyn || 'Supprimer ?')) {
+      return;
+    }
+
+    var $btn = $(this);
+    var $row = $btn.closest('tr');
+    busy($btn, true);
+
+    post('delete_synonym', { id: $row.data('id') })
+      .done(function (res) {
+        toast(res.message);
+        $row.fadeOut(200, function () {
+          $row.remove();
           filterSynonyms();
         });
-        showToast(res.data.message || 'Supprimé');
-      } else {
-        showToast(res.data.message || 'Erreur', true);
-      }
-    });
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
   });
 
-  // Installation de tous les packs recommandés
-  $('#woo-btn-install-recommended').on('click', function() {
+  $('#woo-btn-install-recommended').on('click', function () {
     var $btn = $(this);
-    $btn.prop('disabled', true).text('Installation...');
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_install_recommended_synonyms',
-      nonce: config.nonce
-    }, function(res) {
-      $btn.prop('disabled', false).text('⚡ Installer tous les synonymes suggérés');
-      if (res.success) {
-        showToast(res.data.message || 'Synonymes installés !');
-        setTimeout(function() {
-          location.reload();
-        }, 1100);
-      }
-    });
+    busy($btn, true);
+    post('install_recommended_synonyms')
+      .done(function (res) {
+        toast(res.message);
+        reloadSoon();
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
   });
 
-  // Ajout individuel d'un terme recommandé
-  $(document).on('click', '.woo-add-single-rec-btn', function() {
+  $(document).on('click', '.woo-add-single-rec-btn', function () {
     var $btn = $(this);
-    var from = $btn.data('from');
-    var to = $btn.data('to');
-    var type = $btn.data('type') || 'expand';
-
-    $btn.prop('disabled', true).text('...');
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_add_synonym',
-      from: from,
-      to: to,
-      type: type,
-      nonce: config.nonce
-    }, function(res) {
-      if (res.success) {
-        $btn.replaceWith('<span class="woo-status-active">✓ Actif</span>');
-        showToast('Synonyme « ' + from + ' » associé à « ' + to + ' »');
-      }
-    });
+    busy($btn, true);
+    post('add_synonym', { from: $btn.data('from'), to: $btn.data('to'), type: $btn.data('type') })
+      .done(function (res) {
+        toast(res.message);
+        reloadSoon(600);
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
   });
 
-  /* ==========================================================================
-     4. ANALYTICS & STATISTIQUES (AVEC MASQUAGE DIRECT)
-     ========================================================================== */
+  /* ------------------------------------------------------------------
+   * 5. Statistiques & 0 résultat
+   * ---------------------------------------------------------------- */
 
-  // Purge des logs anciens (> 90j)
-  $('#woo-btn-clear-logs').on('click', function() {
-    if (!confirm(config.i18n.confirmClearLogs || 'Purger les statistiques anciennes ?')) return;
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_clear_logs',
-      nonce: config.nonce
-    }, function(res) {
-      if (res.success) {
-        showToast(res.data.message || 'Logs purgés avec succès.');
-        setTimeout(function() {
-          location.reload();
-        }, 1000);
-      }
-    });
-  });
-
-  // Masquer/Ignorer un terme directement depuis l'onglet Analytics ou 0 Résultat
-  $(document).on('click', '.woo-ignore-term-btn', function() {
-    var $btn = $(this);
-    var term = $btn.data('term');
-    var $row = $btn.closest('tr');
-
-    if (!confirm(config.i18n.confirmIgnore || 'Ignorer définitivement ce terme ?')) return;
-
-    $btn.prop('disabled', true);
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_ignore_term',
-      term: term,
-      nonce: config.nonce
-    }, function(res) {
-      if (res.success) {
-        $row.fadeOut(300, function() {
-          $(this).remove();
-        });
-        showToast(res.data.message || 'Terme ignoré.');
-      } else {
-        $btn.prop('disabled', false);
-        showToast(res.data.message || 'Erreur', true);
-      }
-    });
-  });
-
-  /* ==========================================================================
-     5. 0 RÉSULTAT & BLACKLIST UNIVERSELLE
-     ========================================================================== */
-
-  // Association rapide en 1 clic
-  $(document).on('click', '.woo-quick-zero-btn', function() {
-    var $btn = $(this);
-    var from = $btn.data('from');
-    var to = $btn.data('to');
-
-    $btn.prop('disabled', true).text('Association...');
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_add_synonym',
-      from: from,
-      to: to,
-      type: 'expand',
-      nonce: config.nonce
-    }, function(res) {
-      if (res.success) {
-        $btn.replaceWith('<span class="woo-status-active">✓ Associé</span>');
-        showToast('Synonyme « ' + from + ' » associé à « ' + to + ' » !');
-      } else {
-        $btn.prop('disabled', false).text('⚡ Associer 1 clic');
-        showToast(res.data.message || 'Erreur', true);
-      }
-    });
-  });
-
-  // Réactiver un terme ignoré
-  $(document).on('click', '.woo-unignore-btn', function() {
-    var $btn = $(this);
-    var term = $btn.data('term');
-    var $pill = $btn.closest('.woo-ignored-pill');
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_unignore_term',
-      term: term,
-      nonce: config.nonce
-    }, function(res) {
-      if (res.success) {
-        $pill.fadeOut(200, function() {
-          $(this).remove();
-        });
-        showToast(res.data.message || 'Terme réactivé.');
-      }
-    });
-  });
-
-  // Sélection groupée
-  function updateBulkBar() {
-    var checkedCount = $('.woo-zero-cb:checked').length;
-    var $bulkBar = $('#woo-bulk-bar');
-    var $bulkCount = $('#woo-bulk-count');
-
-    if (checkedCount > 0) {
-      $bulkCount.text(checkedCount + ' terme(s) sélectionné(s)');
-      $bulkBar.slideDown(150);
-    } else {
-      $bulkBar.slideUp(150);
+  $(document).on('click', '.woo-ignore-term-btn', function () {
+    if (!window.confirm(i18n.confirmIgnore || 'Ignorer ?')) {
+      return;
     }
+
+    var $btn = $(this);
+    busy($btn, true);
+
+    post('ignore_term', { term: String($btn.data('term')) })
+      .done(function (res) {
+        toast(res.message);
+        $btn.closest('tr').fadeOut(200, function () { $(this).remove(); updateBulkBar(); });
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
+  });
+
+  $(document).on('click', '.woo-unignore-btn', function () {
+    var $btn = $(this);
+    busy($btn, true);
+
+    post('unignore_term', { term: String($btn.data('term')) })
+      .done(function (res) {
+        toast(res.message);
+        $btn.closest('.woo-ignored-pill').fadeOut(200, function () { $(this).remove(); });
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
+  });
+
+  $(document).on('click', '.woo-quick-zero-btn', function () {
+    var $btn = $(this);
+    busy($btn, true);
+
+    post('add_synonym', { from: String($btn.data('from')), to: String($btn.data('to')), type: 'expand' })
+      .done(function (res) {
+        toast(res.message);
+        reloadSoon(800);
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
+  });
+
+  $('#woo-btn-clear-logs').on('click', function () {
+    if (!window.confirm(i18n.confirmClearLogs || 'Purger ?')) {
+      return;
+    }
+
+    var $btn = $(this);
+    busy($btn, true);
+    post('clear_logs')
+      .done(function (res) {
+        toast(res.message);
+        reloadSoon();
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
+  });
+
+  function updateBulkBar() {
+    var n = $('.woo-zero-cb:checked').length;
+    $('#woo-bulk-count').text(n + ' / ' + $('.woo-zero-cb').length);
+    $('#woo-bulk-bar').toggle(n > 0);
+    $('#woo-select-all-zero').prop('checked', n > 0 && n === $('.woo-zero-cb').length);
   }
 
-  $('#woo-select-all-zero').on('change', function() {
-    var isChecked = $(this).is(':checked');
-    $('.woo-zero-cb').prop('checked', isChecked);
-    $('.woo-zero-row').toggleClass('is-selected', isChecked);
+  $('#woo-select-all-zero').on('change', function () {
+    $('.woo-zero-cb').prop('checked', this.checked);
     updateBulkBar();
   });
 
-  $(document).on('change', '.woo-zero-cb', function() {
-    $(this).closest('.woo-zero-row').toggleClass('is-selected', $(this).is(':checked'));
-    updateBulkBar();
-  });
+  $(document).on('change', '.woo-zero-cb', updateBulkBar);
 
-  // Ignorer en masse les termes sélectionnés
-  $('#woo-bulk-ignore-btn').on('click', function() {
-    var selected = [];
-    $('.woo-zero-cb:checked').each(function() {
-      var val = $(this).val();
-      if (val) selected.push(val);
-    });
-
-    if (selected.length === 0) return;
-
-    if (!confirm(config.i18n.confirmBulk || 'Ignorer la sélection ?')) return;
+  $('#woo-bulk-ignore-btn').on('click', function () {
+    var terms = $('.woo-zero-cb:checked').map(function () { return this.value; }).get();
+    if (!terms.length || !window.confirm(i18n.confirmBulk || 'Ignorer la sélection ?')) {
+      return;
+    }
 
     var $btn = $(this);
-    $btn.prop('disabled', true).text('Action en cours...');
-
-    $.post(config.ajaxUrl, {
-      action: 'woo_search_bulk_ignore_terms',
-      terms: selected,
-      nonce: config.nonce
-    }, function(res) {
-      $btn.prop('disabled', false).text('🚫 Ignorer la sélection');
-      if (res.success) {
-        $('.woo-zero-cb:checked').closest('.woo-zero-row').fadeOut(300, function() {
-          $(this).remove();
-        });
-        $('#woo-bulk-bar').hide();
-        $('#woo-select-all-zero').prop('checked', false);
-        showToast(res.data.message || 'Termes ignorés avec succès.');
-        setTimeout(function() {
-          location.reload();
-        }, 1200);
-      } else {
-        showToast(res.data.message || 'Erreur', true);
-      }
-    });
+    busy($btn, true);
+    post('bulk_ignore_terms', { terms: terms })
+      .done(function (res) {
+        toast(res.message);
+        reloadSoon(700);
+      })
+      .fail(function (msg) {
+        toast(msg, true);
+        busy($btn, false);
+      });
   });
 });

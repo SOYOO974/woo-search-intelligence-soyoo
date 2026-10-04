@@ -56,6 +56,38 @@ final class Woo_Search_Text {
 	];
 
 	/**
+	 * Table de pliage effective (FOLD_MAP + filtre `woo_search_accent_map`), résolue une fois.
+	 *
+	 * @var array<string, string>|null
+	 */
+	private static ?array $fold_map = null;
+
+	/**
+	 * Table de translittération effective. Le filtre `woo_search_accent_map` permet d'ajouter
+	 * des équivalences (ex. caractères d'une langue étrangère) ; toute modification impose
+	 * une reconstruction de l'index pour rester cohérente avec les requêtes.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function fold_map(): array {
+		if ( null === self::$fold_map ) {
+			$map = self::FOLD_MAP;
+			if ( function_exists( 'apply_filters' ) ) {
+				$filtered = apply_filters( 'woo_search_accent_map', $map );
+				if ( is_array( $filtered ) ) {
+					$map = array_map( 'strval', $filtered );
+				}
+				// Avant le chargement du thème, les filtres de functions.php ne sont pas encore branchés.
+				if ( ! did_action( 'after_setup_theme' ) ) {
+					return $map;
+				}
+			}
+			self::$fold_map = $map;
+		}
+		return self::$fold_map;
+	}
+
+	/**
 	 * Pliage complet d'un texte libre vers l'alphabet [a-z0-9 ].
 	 *
 	 * « Bâche PE 4x5m - Œillets » → « bache pe 4 x 5 m oeillets »
@@ -70,7 +102,7 @@ final class Woo_Search_Text {
 
 		$text = html_entity_decode( strip_tags( $text ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		$text = mb_strtolower( $text, 'UTF-8' );
-		$text = strtr( $text, self::FOLD_MAP );
+		$text = strtr( $text, self::fold_map() );
 
 		// Tout ce qui n'est pas alphanumérique ASCII devient séparateur.
 		$text = (string) preg_replace( '/[^a-z0-9]+/', ' ', $text );

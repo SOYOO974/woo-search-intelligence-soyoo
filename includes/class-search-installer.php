@@ -1,10 +1,10 @@
 <?php
 /**
- * Installation, migrations de schÃ©ma versionnÃ©es et tÃ¢ches planifiÃ©es
+ * Installation, migrations de schéma versionnées et tâches planifiées
  *
- * Les mises Ã  jour arrivant par GitHub Releases (PUC) ne dÃ©clenchent pas le hook
- * d'activation : le schÃ©ma est donc comparÃ© Ã  chaque chargement via une option
- * autoloadÃ©e (`woo_search_db_version`) et migrÃ© automatiquement si nÃ©cessaire.
+ * Les mises à jour arrivant par GitHub Releases (PUC) ne déclenchent pas le hook
+ * d'activation : le schéma est donc comparé à chaque chargement via une option
+ * autoloadée (`woo_search_db_version`) et migré automatiquement si nécessaire.
  *
  * @package Woo_Search_Intelligence_Soyoo
  */
@@ -37,7 +37,7 @@ final class Woo_Search_Installer {
 	}
 
 	/**
-	 * RÃ©glages par dÃ©faut de l'extension.
+	 * Réglages par défaut de l'extension.
 	 *
 	 * @return array<string, mixed>
 	 */
@@ -72,7 +72,7 @@ final class Woo_Search_Installer {
 	}
 
 	/**
-	 * VÃ©rifie la version du schÃ©ma Ã  chaque chargement (coÃ»t : 1 option autoloadÃ©e).
+	 * Vérifie la version du schéma à chaque chargement (coût : 1 option autoloadée).
 	 */
 	public static function maybe_upgrade(): void {
 		if ( self::DB_VERSION !== (string) get_option( 'woo_search_db_version', '' ) ) {
@@ -81,7 +81,7 @@ final class Woo_Search_Installer {
 	}
 
 	/**
-	 * CrÃ©ation / migration des tables, options et crons. Idempotent.
+	 * Création / migration des tables, options et crons. Idempotent.
 	 */
 	public static function install(): void {
 		global $wpdb;
@@ -89,7 +89,7 @@ final class Woo_Search_Installer {
 		$tables          = self::tables();
 		$charset_collate = $wpdb->get_charset_collate();
 
-		// Journal des recherches. Toutes les dates sont stockÃ©es en UTC.
+		// Journal des recherches. Toutes les dates sont stockées en UTC.
 		$sql_logs = "CREATE TABLE {$tables['logs']} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			search_uid char(16) NOT NULL DEFAULT '',
@@ -115,7 +115,7 @@ final class Woo_Search_Installer {
 			KEY searched_at (searched_at)
 		) {$charset_collate};";
 
-		// Index de recherche dÃ©normalisÃ© : un produit = une ligne, textes prÃ©-pliÃ©s et bordÃ©s d'espaces.
+		// Index de recherche dénormalisé : un produit = une ligne, textes pré-pliés et bordés d'espaces.
 		$sql_index = "CREATE TABLE {$tables['index']} (
 			product_id bigint(20) unsigned NOT NULL,
 			title text NOT NULL,
@@ -134,7 +134,7 @@ final class Woo_Search_Installer {
 		dbDelta( $sql_logs );
 		dbDelta( $sql_index );
 
-		// RÃ©glages : fusion non destructive avec les valeurs par dÃ©faut.
+		// Réglages : fusion non destructive avec les valeurs par défaut.
 		$saved = get_option( 'woo_search_settings', [] );
 		update_option( 'woo_search_settings', wp_parse_args( is_array( $saved ) ? $saved : [], self::default_settings() ) );
 
@@ -143,13 +143,13 @@ final class Woo_Search_Installer {
 
 		self::schedule_crons();
 
-		// La (re)construction de l'index est dÃ©clenchÃ©e au prochain `init` (Action Scheduler disponible).
+		// La (re)construction de l'index est déclenchée au prochain `init` (Action Scheduler disponible).
 		update_option( 'woo_search_needs_rebuild', 1 );
 		update_option( 'woo_search_db_version', self::DB_VERSION );
 	}
 
 	/**
-	 * Planifie les crons rÃ©currents s'ils sont absents.
+	 * Planifie les crons récurrents s'ils sont absents.
 	 */
 	public static function schedule_crons(): void {
 		if ( ! wp_next_scheduled( self::CRON_WEEKLY_DIGEST ) ) {
@@ -161,7 +161,7 @@ final class Woo_Search_Installer {
 	}
 
 	/**
-	 * DÃ©sactivation : arrÃªt des tÃ¢ches planifiÃ©es, donnÃ©es conservÃ©es.
+	 * Désactivation : arrêt des tâches planifiées, données conservées.
 	 */
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( self::CRON_WEEKLY_DIGEST );
@@ -172,12 +172,12 @@ final class Woo_Search_Installer {
 	}
 
 	/**
-	 * ExÃ©cution asynchrone d'un hook : Action Scheduler (WooCommerce) si disponible,
+	 * Exécution asynchrone d'un hook : Action Scheduler (WooCommerce) si disponible,
 	 * sinon WP-Cron ponctuel.
 	 *
-	 * @param string            $hook   Hook Ã  dÃ©clencher.
+	 * @param string            $hook   Hook à déclencher.
 	 * @param array<int, mixed> $args   Arguments.
-	 * @param bool              $unique Ne pas empiler si une action identique est dÃ©jÃ  en attente.
+	 * @param bool              $unique Ne pas empiler si une action identique est déjà en attente.
 	 */
 	public static function async( string $hook, array $args = [], bool $unique = false ): void {
 		if ( function_exists( 'as_enqueue_async_action' ) && did_action( 'action_scheduler_init' ) ) {
@@ -195,9 +195,9 @@ final class Woo_Search_Installer {
 	}
 
 	/**
-	 * Planification diffÃ©rÃ©e (debounce) d'un hook.
+	 * Planification différée (debounce) d'un hook.
 	 *
-	 * @param int               $delay DÃ©lai en secondes.
+	 * @param int               $delay Délai en secondes.
 	 * @param string            $hook  Hook.
 	 * @param array<int, mixed> $args  Arguments.
 	 */
@@ -216,7 +216,7 @@ final class Woo_Search_Installer {
 	}
 
 	/**
-	 * Suppression complÃ¨te des donnÃ©es (appelÃ©e depuis uninstall.php si l'option est activÃ©e).
+	 * Suppression complète des données (appelée depuis uninstall.php si l'option est activée).
 	 */
 	public static function purge_all_data(): void {
 		global $wpdb;

@@ -711,3 +711,268 @@
 		transform: translateY(0);
 	}
 }
+
+/* ==========================================================================
+   v1.1 — Index, CTR/conversions, statuts et utilitaires
+   ========================================================================== */
+
+.woo-badge-warn {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.woo-banner-warn {
+	background: #fffbeb;
+	border: 1px solid #fde68a;
+	border-radius: 10px;
+	padding: 14px 20px;
+	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 12px;
+	color: #92400e;
+	font-size: 13px;
+}
+
+.woo-banner-warn strong {
+	color: #78350f;
+}
+
+.woo-card-title-sm {
+	font-size: 14px;
+	margin-bottom: 10px;
+}
+
+.woo-card-footer {
+	margin-top: 16px;
+	padding-top: 14px;
+	border-top: 1px solid #f1f5f9;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.woo-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.woo-btn-block {
+	display: flex;
+	width: 100%;
+	justify-content: center;
+	margin-top: 8px;
+}
+
+.woo-btn-xs {
+	padding: 3px 9px;
+	font-size: 12px;
+	border-radius: 6px;
+}
+
+.woo-btn:disabled,
+.woo-btn.is-busy {
+	opacity: 0.6;
+	cursor: wait;
+	pointer-events: none;
+}
+
+.woo-btn:focus-visible {
+	outline: 2px solid #059669;
+	outline-offset: 2px;
+}
+
+.woo-form-actions {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	position: sticky;
+	bottom: 0;
+	background: rgba(241, 245, 249, 0.92);
+	padding: 12px 0;
+	z-index: 5;
+}
+
+.woo-inline-status {
+	font-size: 13px;
+	font-weight: 600;
+	color: #64748b;
+	margin-left: 8px;
+}
+
+.woo-radio-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.woo-radio-stack label {
+	display: grid !important;
+	grid-template-columns: auto 1fr;
+	column-gap: 8px;
+	align-items: start;
+	font-weight: 400;
+	cursor: pointer;
+}
+
+.woo-radio-stack input[type="radio"] {
+	margin: 2px 0 0;
+	grid-row: span 2;
+}
+
+.woo-radio-stack .woo-field-hint {
+	grid-column: 2;
+}
+
+.woo-small-label {
+	font-size: 12px !important;
+	font-weight: 500 !important;
+	margin: 8px 0;
+}
+
+.woo-flex-2 {
+	flex: 2 1 200px;
+}
+
+.woo-flex-15 {
+	flex: 1.5 1 150px;
+}
+
+.woo-settings-main,
+.woo-settings-sidebar {
+	min-width: 0;
+}
+
+.woo-tab-body {
+	min-height: 200px;
+}
+
+/* Colonnes de tableaux */
+.woo-table th.woo-col-actions,
+.woo-table td.woo-col-actions {
+	text-align: right;
+	white-space: nowrap;
+}
+
+.woo-table td.woo-col-actions .woo-btn + .woo-btn {
+	margin-left: 4px;
+}
+
+.woo-table th.woo-col-num,
+.woo-table td.woo-col-num {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.woo-table th.woo-col-rank,
+.woo-table td.woo-col-rank {
+	width: 36px;
+	color: #94a3b8;
+	font-weight: 700;
+}
+
+.woo-table th.woo-col-check,
+.woo-table td.woo-col-check {
+	width: 28px;
+}
+
+.woo-table td.woo-empty-cell {
+	text-align: center;
+	color: #94a3b8;
+	padding: 28px 14px;
+}
+
+.woo-table tr.is-editing td {
+	background: #f0fdf4;
+}
+
+.woo-inline-input {
+	width: 100%;
+	max-width: 260px;
+}
+
+/* Textes et états */
+.woo-muted {
+	color: #94a3b8;
+}
+
+.woo-muted-xs {
+	color: #94a3b8;
+	font-size: 11px;
+}
+
+.is-good {
+	color: #059669 !important;
+}
+
+.is-bad {
+	color: #b91c1c !important;
+}
+
+.woo-kpi-text {
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.3;
+	word-break: break-word;
+}
+
+.woo-pill {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 700;
+	padding: 3px 9px;
+	border-radius: 12px;
+	white-space: nowrap;
+}
+
+.woo-pill-ok {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.woo-pill-bad {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.woo-alert-box {
+	border-radius: 8px;
+	padding: 10px 14px;
+	font-size: 12px;
+	font-weight: 600;
+	margin-bottom: 12px;
+}
+
+.woo-alert-success {
+	background: #ecfdf5;
+	border: 1px solid #a7f3d0;
+	color: #065f46;
+}
+
+@media (max-width: 782px) {
+	.woo-admin-header,
+	.woo-card-header-flex {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.woo-card {
+		padding: 18px;
+	}
+
+	.woo-table {
+		display: block;
+		overflow-x: auto;
+	}
+
+	.woo-filter-input {
+		width: 100%;
+	}
+}

@@ -10,7 +10,7 @@
 >    - Toute évolution ou correction de bug doit obligatoirement être réalisée et versionnée au sein de ce dépôt dédié.
 > 2. **Découplage Métier par Hooks** :
 >    - Ne jamais réintroduire de règles spécifiques à un client (ex: regex de dimensions MFM ou contenances Jardin Naturel) en dur dans le cœur du plugin.
->    - Utiliser systématiquement les filtres `woo_search_normalize_query`, `woo_search_default_synonyms`, `woo_search_accent_map` et `woo_search_is_bot`.
+>    - Utiliser systématiquement les filtres `woo_search_normalize_query`, `woo_search_default_synonyms`, `woo_search_accent_map`, `woo_search_is_bot`, `woo_search_index_data`, `woo_search_index_taxonomies` et `woo_search_ajax_actions` (alias AJAX des thèmes, jamais en dur dans le cœur). Liste complète dans `README.md`.
 
 ---
 
@@ -36,6 +36,7 @@ Dès qu'une modification ou amélioration est apportée à cette extension :
    - Exécuter impérativement `php -l` sur l'ensemble des fichiers PHP du projet :
      ```powershell
      Get-ChildItem -Recurse -Filter *.php | ForEach-Object { php -l $_.FullName }
+     php tests/run-tests.php
      ```
 
 3. **Commit Conventionnel & Push Proactif sur GitHub** :
@@ -64,13 +65,21 @@ Dès qu'une modification ou amélioration est apportée à cette extension :
 
 ## 🧱 ARCHITECTURE & FICHIERS DU PROJET
 
-- [`woo-search-intelligence-soyoo.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/woo-search-intelligence-soyoo.php) : Point d'entrée de l'extension, vérification WooCommerce, déclaration HPOS (`custom_order_tables` et `cart_checkout_blocks`), initialisation de `plugin-update-checker` (PUC v5.6) avec `enableReleaseAssets()`, création de la table `{$wpdb->prefix}woo_search_logs` via `dbDelta` et crons.
+- [`woo-search-intelligence-soyoo.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/woo-search-intelligence-soyoo.php) : Point d'entrée, en-têtes (`Requires Plugins: woocommerce`), déclaration HPOS (`custom_order_tables` et `cart_checkout_blocks`), initialisation de `plugin-update-checker` (PUC v5.6) avec `enableReleaseAssets()`, hooks d'activation/désactivation délégués à `Woo_Search_Installer`, bootstrap des modules sur `plugins_loaded`.
+- [`uninstall.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/uninstall.php) : Suppression des crons ; purge des données uniquement si l'option `delete_data_on_uninstall` est cochée.
 - [`bin/build-zip.ps1`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/bin/build-zip.ps1) : Script de packaging automatisé pour générer l'archive release compatible Linux/WordPress.
 - [`plugin-update-checker/`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/plugin-update-checker/) : Bibliothèque PUC v5.6 autonome pour les mises à jour automatiques via GitHub Releases.
-- [`includes/class-search-engine.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-engine.php) : Moteur de recherche natif, scoring multi-paliers (SKU variation/parent, titre préfixe, phrase exacte, tous les mots, mots distincts, extrait, stock), lemmatisation française, synonymes et transients.
-- [`includes/class-search-tracker.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-tracker.php) : Tracker universel (Live search AJAX + soumissions de formulaire standard sur `template_redirect`), Anti-Bot Shield sur User-Agent, anti-flood 15s et alertes par e-mail.
-- [`includes/class-search-admin.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-admin.php) : Page d'administration sous WooCommerce, gestion des 4 onglets, inline edit des synonymes, masquage universel des termes (Blacklist), pagination serveur 25 items et export CSV formaté Excel.
-- [`includes/class-search-importer.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-importer.php) : Outil de migration asynchrone par lots (250 items/lot) avec barre de progression temps réel depuis Search Analytics for WP (`mwt_search_terms`, `mwt_search_history`).
-- [`assets/css/admin.css`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/assets/css/admin.css) : Styles soignés et responsives du tableau de bord.
-- [`assets/js/admin.js`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/assets/js/admin.js) : Contrôleur client, interactions AJAX, filtrage temps réel et boucle séquentielle d'importation batchée.
+- [`includes/class-search-text.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-text.php) : Normalisation pure sans WordPress (pliage accents/ponctuation/chiffres-lettres, lemmatisation FR, correction orthographique, harmonisation des titres). Couverte par `tests/run-tests.php`.
+- [`includes/class-search-installer.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-installer.php) : Schéma versionné (`DB_VERSION`, migration auto via `maybe_upgrade()` car PUC ne déclenche pas l'activation), réglages par défaut, crons, exécution asynchrone (Action Scheduler / WP-Cron), purge.
+- [`includes/class-search-indexer.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-indexer.php) : Index produit `{prefix}woo_search_index` mis à jour en continu, reconstruction par lots, vocabulaire pour la correction orthographique, génération de cache.
+- [`includes/class-search-engine.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-engine.php) : Plan de requête, modes all/corrected/any, scoring (SKU, titre, termes, extrait, stock, ventes), endpoint `woo_live_search`, intégration de la page de résultats, synonymes à identifiants stables.
+- [`includes/class-search-tracker.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-tracker.php) : Journalisation différée (AJAX + page), consolidation 45 s, clics (`wsi_click`), attribution des commandes (cookie `wsi_ref`), Anti-Bot Shield, alertes et maintenance quotidienne.
+- [`includes/class-search-admin.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-admin.php) : Page d'administration sous WooCommerce, 4 onglets, KPIs (CTR, conversions), état/reconstruction de l'index, synonymes, blacklist, pagination serveur 25 items et export CSV sécurisé.
+- [`includes/class-search-importer.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/includes/class-search-importer.php) : Migration par lots (500, curseur de clé, dates converties en UTC) depuis Search Analytics for WP (`mwt_search_terms`, `mwt_search_history`).
+- [`assets/css/admin.css`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/assets/css/admin.css) / [`assets/js/admin.js`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/assets/js/admin.js) : Tableau de bord (helper AJAX unique avec gestion de session expirée, boucles batch index/import, édition en ligne).
+- [`assets/js/frontend.js`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/assets/js/frontend.js) / [`assets/css/frontend.css`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/assets/css/frontend.css) : Mesure des clics/conversions (toujours chargé si la mesure est active) et live search intégré optionnel (désactivé par défaut).
+- [`tests/run-tests.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/tests/run-tests.php) : Tests CLI de la couche texte (`php tests/run-tests.php`), exclus de l'archive.
 - [`PROJECT_CONTEXT.md`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/PROJECT_CONTEXT.md) : Spécifications techniques et fonctionnelles complètes du projet.
+
+> [!IMPORTANT]
+> Toute modification du schéma SQL impose d'incrémenter `Woo_Search_Installer::DB_VERSION`. Toute modification de `Woo_Search_Text::fold()` ou des données indexées impose une reconstruction de l'index (déclenchée automatiquement si `DB_VERSION` change).
