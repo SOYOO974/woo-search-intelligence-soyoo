@@ -1,0 +1,18 @@
+# Archives & Builds
+*.zip
+*.tar.gz
+
+# Temporary & Log files
+*.tmp
+*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor folders
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
