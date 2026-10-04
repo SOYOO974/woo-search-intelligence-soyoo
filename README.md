@@ -60,6 +60,10 @@ Sur beaucoup de boutiques en ligne WooCommerce, le moteur de recherche par défa
   - Export CSV direct formaté avec BOM UTF-8 (ouverture immédiate dans Microsoft Excel sans problème d'accents).
   - Pagination par lots de 25 lignes pour absorber sans ralentissement des dizaines de milliers de logs.
 
+- **🔄 Mises à Jour Automatiques en 1 Clic (GitHub Releases)** :
+  - Intégration native de Plugin Update Checker (PUC v5.6).
+  - Détection et mise à niveau transparente depuis l'administration WordPress (`wp-admin > Extensions`) dès qu'une release GitHub est publiée, sans nécessiter de transfert FTP manuel.
+
 ---
 
 ## 🗄️ Structure de la Base de Données

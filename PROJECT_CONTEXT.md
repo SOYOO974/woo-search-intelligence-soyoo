@@ -18,6 +18,8 @@ Créer l'extension in-house unique, universelle, 100% autonome et compatible Woo
 - **Slug** : `woo-search-intelligence-soyoo`
 - **Dépôt GitHub** : [`https://github.com/SOYOO974/woo-search-intelligence-soyoo.git`](https://github.com/SOYOO974/woo-search-intelligence-soyoo.git)
 - **Branche principale** : `main`
+- **Mécanisme de mise à jour** : Plugin Update Checker (PUC v5.6) connecté aux Releases GitHub (`enableReleaseAssets()`)
+- **Politique de déploiement** : Zéro déploiement FTP manuel. Les mises à jour s'effectuent par commit/push Git + publication d'une Release GitHub contenant l'archive `.zip`. Les sites WordPress clients consomment la mise à jour automatiquement en 1 clic.
 - **Auteur** : SOYOO (Julien Vanwinsberghe)
 - **Prérequis** : PHP 8.1+, WordPress 6.0+, WooCommerce 7.0+ (HPOS Ready)
 
@@ -82,6 +84,55 @@ Le plugin reste générique et agnostique. Les règles métiers spécifiques son
 - Tables administratives paginées à 25 résultats par page pour supporter des volumes de plus de 100 000 requêtes sans saturer la RAM ni ralentir le wp-admin.
 - Export CSV direct avec insertion du BOM UTF-8 (`\xEF\xBB\xBF`) pour une ouverture parfaite dans Microsoft Excel sans encodage corrompu.
 
+### 9. Mises à Jour Automatiques via GitHub Releases & PUC v5.6
+- **Bibliothèque intégrée** : Plugin Update Checker (v5.6) par YahnisElsts, embarquée dans le dossier `plugin-update-checker/`.
+- **Surveillance des Releases GitHub** : Le module interroge le dépôt [`SOYOO974/woo-search-intelligence-soyoo`](https://github.com/SOYOO974/woo-search-intelligence-soyoo) sur la branche stable `main`.
+- **Assets de Release Dédiés (`enableReleaseAssets()`)** :
+  - WordPress ne télécharge pas un zipball brut de code source, mais l'archive autonome compilée `woo-search-intelligence-soyoo.zip` attachée à chaque GitHub Release.
+  - Cette archive contient le dossier racine normé `woo-search-intelligence-soyoo/`, toutes les classes PHP, les assets CSS/JS et la bibliothèque PUC, assurant une installation/mise à niveau sans corruption d'arborescence.
+- **Zéro Déploiement FTP** : Les boutiques clientes (Bâches MFM, Jardin Naturel, Conforama, etc.) se mettent à jour directement en 1 clic depuis le tableau de bord WordPress (`wp-admin > Mises à jour` ou `Extensions`).
+
+---
+
+## 🚀 Protocole de Création de Release & Mise à Jour Automatique
+
+À chaque nouvelle version (correctif, optimisation ou nouvelle fonctionnalité), suivre scrupuleusement la séquence d'actions ci-dessous :
+
+### Étape 1 : Incrémenter le Numéro de Version
+Modifier le numéro de version sémantique (`MAJOR.MINOR.PATCH`) à deux emplacements dans [`woo-search-intelligence-soyoo.php`](file:///C:/Antigravity/woo-plugins/woo-search-intelligence-soyoo/woo-search-intelligence-soyoo.php) :
+1. En-tête du plugin : `* Version: X.Y.Z`
+2. Constante PHP : `define( 'WOO_SEARCH_INTEL_VERSION', 'X.Y.Z' );`
+
+### Étape 2 : Validation Syntaxique & Linting PHP
+S'assurer qu'aucun fichier ne contient d'erreur PHP :
+```powershell
+Get-ChildItem -Recurse -Filter *.php | ForEach-Object { php -l $_.FullName }
+```
+
+### Étape 3 : Commit Conventionnel & Push sur GitHub
+Commiter l'ensemble des modifications et pousser sur la branche `main` :
+```bash
+git add .
+git commit -m "feat/fix: <description concise et explicite> (vX.Y.Z)"
+git push origin main
+```
+
+### Étape 4 : Compilation de l'Archive Release (.zip)
+Exécuter le script de build standardisé qui utilise `tar` avec forward slashes `/` (compatibilité Linux/WordPress garantie) :
+```powershell
+powershell -ExecutionPolicy Bypass -File .\bin\build-zip.ps1
+```
+*Le script effectue automatiquement une vérification syntaxique préalable, prépare un répertoire de staging temporaire et génère `woo-search-intelligence-soyoo.zip` à la racine.*
+
+### Étape 5 : Publication de la Release sur GitHub
+Créer la release officielle avec l'archive attachée via la CLI GitHub (`gh`) :
+```bash
+gh release create vX.Y.Z woo-search-intelligence-soyoo.zip --title "vX.Y.Z - <Titre de la release>" --notes "<Description des nouveautés et correctifs>"
+```
+
+### Étape 6 : Propagation Automatique
+Dès la publication, Plugin Update Checker sur les sites WordPress clients détecte la mise à jour (au rafraîchissement du catalogue d'extensions ou sous 12h via le cache transient natif WordPress) et permet la mise à niveau en 1 clic.
+
 ---
 
 ## 🗄️ Structure de Données MySQL
@@ -109,16 +160,19 @@ CREATE TABLE {$wpdb->prefix}woo_search_logs (
 
 ```text
 woo-search-intelligence-soyoo/
-├── woo-search-intelligence-soyoo.php   # Initialisation, vérification WC, déclaration HPOS, dbDelta
+├── bin/
+│   └── build-zip.ps1                   # Script de packaging de l'archive ZIP Linux/WordPress
 ├── includes/
 │   ├── class-search-engine.php         # Moteur de scoring SQL, lemmatisation, transients, live search
 │   ├── class-search-tracker.php        # Interception universelle AJAX & standard, anti-bot shield, alertes
 │   ├── class-search-admin.php          # Interface 4 onglets, blacklist, pagination, export CSV
 │   └── class-search-importer.php       # Migration asynchrone par lots depuis Search Analytics for WP
+├── plugin-update-checker/              # Bibliothèque PUC v5.6 pour auto-updates via GitHub Releases
 ├── assets/
 │   ├── css/admin.css                   # Styles de l'interface d'administration
 │   └── js/admin.js                     # Contrôleur JS, gestion des batchs, filtres, inline edit
-├── PROJECT_CONTEXT.md                  # Spécifications et contexte technique (ce fichier)
+├── woo-search-intelligence-soyoo.php   # Point d'entrée, déclaration HPOS, init PUC v5.6, dbDelta
+├── PROJECT_CONTEXT.md                  # Spécifications et contexte technique complet (ce fichier)
 ├── AGENTS.md                           # Directives de maintenance et gouvernance pour agents
 └── README.md                           # Documentation publique du dépôt
 ```

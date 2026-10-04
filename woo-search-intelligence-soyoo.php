@@ -28,6 +28,24 @@ define( 'WOO_SEARCH_INTEL_FILE', __FILE__ );
 define( 'WOO_SEARCH_INTEL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOO_SEARCH_INTEL_URL', plugin_dir_url( __FILE__ ) );
 define( 'WOO_SEARCH_INTEL_BASENAME', plugin_basename( __FILE__ ) );
+define( 'WOO_SEARCH_INTEL_GITHUB_REPO', 'https://github.com/SOYOO974/woo-search-intelligence-soyoo/' );
+
+// Initialisation du vérificateur de mises à jour (Plugin Update Checker v5.6).
+$woo_search_intel_update_checker = null;
+if ( file_exists( WOO_SEARCH_INTEL_PATH . 'plugin-update-checker/plugin-update-checker.php' ) ) {
+	require_once WOO_SEARCH_INTEL_PATH . 'plugin-update-checker/plugin-update-checker.php';
+	if ( class_exists( '\YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
+		$woo_search_intel_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+			WOO_SEARCH_INTEL_GITHUB_REPO,
+			WOO_SEARCH_INTEL_FILE,
+			'woo-search-intelligence-soyoo'
+		);
+		$woo_search_intel_update_checker->setBranch( 'main' );
+		if ( method_exists( $woo_search_intel_update_checker->getVcsApi(), 'enableReleaseAssets' ) ) {
+			$woo_search_intel_update_checker->getVcsApi()->enableReleaseAssets();
+		}
+	}
+}
 
 /**
  * Déclaration officielle de compatibilité WooCommerce HPOS (High-Performance Order Storage)
