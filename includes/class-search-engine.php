@@ -96,7 +96,7 @@ final class Woo_Search_Engine {
 	 * @param mixed  $default Valeur par défaut.
 	 * @return mixed
 	 */
-	public function get_option( string $key, mixed $default = null ): mixed {
+	public function get_option( string $key, $default = null ) {
 		return $this->options[ $key ] ?? $default;
 	}
 

@@ -3,13 +3,13 @@
  * Plugin Name: WooCommerce Search Intelligence by SOYOO
  * Plugin URI: https://github.com/SOYOO974/woo-search-intelligence-soyoo
  * Description: Moteur de recherche e-commerce propriétaire pour WooCommerce : index dédié, correction orthographique, synonymes, lemmatisation française, intégration de la page de résultats, mesure des clics et des commandes issues de la recherche, alertes « 0 résultat » et tableau de bord décisionnel.
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: SOYOO (Julien Vanwinsberghe)
  * Author URI: https://soyoo.re
  * Text Domain: woo-search-intelligence-soyoo
  * Domain Path: /languages
  * Requires at least: 6.5
- * Requires PHP: 8.1
+ * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  * WC requires at least: 8.0
  * WC tested up to: 10.2
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Constantes globales du plugin.
-define( 'WOO_SEARCH_INTEL_VERSION', '1.1.2' );
+define( 'WOO_SEARCH_INTEL_VERSION', '1.1.3' );
 define( 'WOO_SEARCH_INTEL_FILE', __FILE__ );
 define( 'WOO_SEARCH_INTEL_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOO_SEARCH_INTEL_URL', plugin_dir_url( __FILE__ ) );

@@ -15,6 +15,25 @@ if ( ! defined( 'ABSPATH' ) && ! defined( 'WOO_SEARCH_INTEL_TESTING' ) ) {
 	exit;
 }
 
+// Shims de rétrocompatibilité PHP 7.4 (définis uniquement si non fournis par l'environnement ou WordPress compat).
+if ( ! function_exists( 'str_starts_with' ) ) {
+	function str_starts_with( string $haystack, string $needle ): bool {
+		return '' === $needle || 0 === strncmp( $haystack, $needle, strlen( $needle ) );
+	}
+}
+
+if ( ! function_exists( 'str_ends_with' ) ) {
+	function str_ends_with( string $haystack, string $needle ): bool {
+		return '' === $needle || ( '' !== $haystack && substr( $haystack, -strlen( $needle ) ) === $needle );
+	}
+}
+
+if ( ! function_exists( 'str_contains' ) ) {
+	function str_contains( string $haystack, string $needle ): bool {
+		return '' === $needle || false !== strpos( $haystack, $needle );
+	}
+}
+
 final class Woo_Search_Text {
 
 	/**

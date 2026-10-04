@@ -1,7 +1,7 @@
 # WooCommerce Search Intelligence by SOYOO
 
 Moteur de recherche e-commerce propriétaire pour WooCommerce, conçu et maintenu par **SOYOO**.
-Version actuelle : **1.1.1** — PHP 8.1+, WordPress 6.5+, WooCommerce 8.0+, compatible HPOS.
+Version actuelle : **1.1.3** — PHP 7.4+, WordPress 6.5+, WooCommerce 8.0+, compatible HPOS.
 
 ---
 
