@@ -1,0 +1,713 @@
+/**
+ * Styles d'administration — WooCommerce Search Intelligence by SOYOO
+ */
+
+.woo-search-wrap {
+	max-width: 1240px;
+	margin: 20px 20px 40px 0;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	color: #0f172a;
+}
+
+/* Header */
+.woo-admin-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: #ffffff;
+	padding: 20px 26px;
+	border-radius: 12px;
+	border: 1px solid #e2e8f0;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+	margin-bottom: 20px;
+}
+
+.woo-admin-brand {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.woo-admin-icon {
+	width: 46px;
+	height: 46px;
+	border-radius: 10px;
+	background: #ecfdf5;
+	color: #059669;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.woo-admin-title {
+	font-size: 20px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 0 0 4px 0;
+	line-height: 1.2;
+}
+
+.woo-admin-subtitle {
+	font-size: 13px;
+	color: #64748b;
+	margin: 0;
+}
+
+.woo-admin-badges {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.woo-badge {
+	font-size: 12px;
+	font-weight: 700;
+	padding: 4px 10px;
+	border-radius: 20px;
+}
+
+.woo-badge-version {
+	background: #f1f5f9;
+	color: #475569;
+}
+
+.woo-badge-hpos {
+	background: #dbeafe;
+	color: #1e40af;
+}
+
+/* Bannière d'importation legacy */
+.woo-banner-import {
+	background: #eff6ff;
+	border: 1px solid #bfdbfe;
+	border-radius: 10px;
+	padding: 16px 20px;
+	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 14px;
+}
+
+.woo-banner-import-left {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.woo-banner-icon {
+	font-size: 24px;
+}
+
+.woo-banner-import strong {
+	color: #1e40af;
+	font-size: 14px;
+}
+
+.woo-banner-import p {
+	color: #2563eb;
+	font-size: 13px;
+	margin: 2px 0 0 0;
+}
+
+/* Navigation des onglets */
+.woo-tabs-nav {
+	border-bottom: 1px solid #e2e8f0;
+	margin-bottom: 24px;
+	display: flex;
+}
+
+.woo-tabs-nav .nav-tab {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-bottom: none;
+	color: #475569;
+	font-weight: 600;
+	font-size: 13px;
+	padding: 10px 18px;
+	border-radius: 8px 8px 0 0;
+	margin-right: 6px;
+	transition: all 0.15s ease;
+	display: inline-flex;
+	align-items: center;
+	text-decoration: none;
+}
+
+.woo-tabs-nav .nav-tab:hover {
+	background: #ffffff;
+	color: #059669;
+}
+
+.woo-tabs-nav .nav-tab-active {
+	background: #ffffff;
+	border-bottom: 1px solid #ffffff;
+	color: #059669;
+	font-weight: 700;
+}
+
+.woo-tab-count {
+	background: #e2e8f0;
+	color: #334155;
+	font-size: 11px;
+	padding: 2px 7px;
+	border-radius: 10px;
+	margin-left: 6px;
+}
+
+.woo-tab-badge-alert {
+	background: #fee2e2;
+	color: #b91c1c;
+	font-size: 11px;
+	font-weight: 700;
+	padding: 2px 8px;
+	border-radius: 10px;
+	margin-left: 6px;
+}
+
+/* Grille des réglages (Main + Sidebar) */
+.woo-settings-grid {
+	display: grid;
+	grid-template-columns: 1fr 340px;
+	gap: 24px;
+}
+
+@media (max-width: 1080px) {
+	.woo-settings-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Cartes (Cards) */
+.woo-card {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px 28px;
+	margin-bottom: 24px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.woo-card-title {
+	font-size: 16px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 0 0 6px 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.woo-card-desc {
+	font-size: 13px;
+	color: #64748b;
+	margin: 0 0 20px 0;
+}
+
+.woo-card-header-flex {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 18px;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+/* Formulaires */
+.woo-form-group {
+	margin-bottom: 18px;
+}
+
+.woo-form-group label {
+	display: block;
+	font-weight: 600;
+	font-size: 13px;
+	color: #334155;
+	margin-bottom: 6px;
+}
+
+.woo-checkbox-label {
+	display: flex !important;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	font-weight: 600;
+	font-size: 13px;
+}
+
+.woo-checkbox-label input[type="checkbox"] {
+	margin: 0;
+}
+
+.woo-field-hint {
+	font-size: 12px;
+	color: #64748b;
+	margin: 4px 0 0 0;
+}
+
+.woo-inline-form {
+	display: flex;
+	align-items: flex-end;
+	gap: 12px;
+	flex-wrap: wrap;
+	background: #f8fafc;
+	padding: 16px 20px;
+	border-radius: 10px;
+	border: 1px solid #e2e8f0;
+	margin-bottom: 20px;
+}
+
+.woo-inline-form .woo-form-group {
+	margin-bottom: 0;
+}
+
+/* Boutons */
+.woo-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 7px 16px;
+	font-size: 13px;
+	font-weight: 600;
+	border-radius: 7px;
+	cursor: pointer;
+	text-decoration: none;
+	border: 1px solid transparent;
+	transition: all 0.15s ease;
+	line-height: 1.4;
+}
+
+.woo-btn-primary {
+	background: #059669;
+	color: #ffffff;
+}
+
+.woo-btn-primary:hover {
+	background: #047857;
+	color: #ffffff;
+}
+
+.woo-btn-secondary {
+	background: #ffffff;
+	border-color: #cbd5e1;
+	color: #334155;
+}
+
+.woo-btn-secondary:hover {
+	background: #f1f5f9;
+	border-color: #94a3b8;
+	color: #0f172a;
+}
+
+.woo-btn-danger {
+	background: #fee2e2;
+	border-color: #fecaca;
+	color: #b91c1c;
+}
+
+.woo-btn-danger:hover {
+	background: #fecaca;
+	color: #991b1b;
+}
+
+.woo-btn-ignore {
+	background: #fff1f2;
+	border-color: #fecdd3;
+	color: #be123c;
+}
+
+.woo-btn-ignore:hover {
+	background: #ffe4e6;
+	color: #9f1239;
+}
+
+.woo-btn-lg {
+	padding: 10px 22px;
+	font-size: 14px;
+}
+
+.woo-btn-group {
+	display: inline-flex;
+	border-radius: 7px;
+	overflow: hidden;
+	border: 1px solid #cbd5e1;
+}
+
+.woo-btn-group .woo-btn {
+	border-radius: 0;
+	border: none;
+	border-right: 1px solid #cbd5e1;
+	padding: 6px 12px;
+}
+
+.woo-btn-group .woo-btn:last-child {
+	border-right: none;
+}
+
+/* Grille KPIs */
+.woo-kpi-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.woo-kpi-card {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	padding: 20px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.woo-kpi-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: #64748b;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 6px;
+}
+
+.woo-kpi-val {
+	font-size: 26px;
+	font-weight: 800;
+	color: #0f172a;
+	line-height: 1.1;
+	margin-bottom: 4px;
+}
+
+.woo-kpi-sub {
+	font-size: 12px;
+	color: #94a3b8;
+}
+
+/* Tableaux */
+.woo-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+	margin-top: 8px;
+}
+
+.woo-table th {
+	background: #f8fafc;
+	color: #475569;
+	font-weight: 700;
+	text-align: left;
+	padding: 11px 14px;
+	border-bottom: 2px solid #e2e8f0;
+	font-size: 12px;
+}
+
+.woo-table td {
+	padding: 12px 14px;
+	border-bottom: 1px solid #f1f5f9;
+	color: #1e293b;
+	vertical-align: middle;
+}
+
+.woo-table tr:hover td {
+	background: #f8fafc;
+}
+
+.woo-table tr.is-selected td {
+	background: #fef2f2;
+}
+
+/* Tags & Badges */
+.woo-tag {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 700;
+	padding: 2px 8px;
+	border-radius: 12px;
+}
+
+.woo-tag-replace {
+	background: #e0f2fe;
+	color: #0369a1;
+}
+
+.woo-tag-expand {
+	background: #dcfce7;
+	color: #15803d;
+}
+
+.woo-badge-zero-count {
+	font-weight: 700;
+	background: #fee2e2;
+	color: #b91c1c;
+	padding: 3px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+}
+
+.woo-suggestion-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	background: #f0fdf4;
+	color: #166534;
+	border: 1px solid #bbf7d0;
+	padding: 3px 10px;
+	border-radius: 6px;
+	font-weight: 600;
+	font-size: 12px;
+}
+
+/* Barre d'action groupée */
+.woo-bulk-bar {
+	background: #fef2f2;
+	border: 1px solid #fecaca;
+	border-radius: 8px;
+	padding: 10px 16px;
+	margin-bottom: 14px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #991b1b;
+}
+
+/* Termes ignorés */
+.woo-ignored-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.woo-ignored-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: #f8fafc;
+	border: 1px solid #cbd5e1;
+	padding: 5px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	color: #334155;
+}
+
+.woo-unignore-btn {
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	color: #dc2626;
+	font-size: 16px;
+	line-height: 1;
+	padding: 0;
+	margin: 0;
+}
+
+.woo-unignore-btn:hover {
+	color: #991b1b;
+}
+
+/* Barre d'outils et filtres */
+.woo-toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+	gap: 12px;
+	background: #f8fafc;
+	padding: 12px 16px;
+	border-radius: 8px;
+	border: 1px solid #e2e8f0;
+}
+
+.woo-toolbar-left {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	flex: 1;
+}
+
+.woo-filter-input {
+	width: 260px;
+	padding: 6px 12px;
+	border: 1px solid #cbd5e1;
+	border-radius: 6px;
+	font-size: 13px;
+}
+
+.woo-filter-select {
+	height: 33px;
+	font-size: 13px;
+	border-radius: 6px;
+	border: 1px solid #cbd5e1;
+	padding: 0 8px;
+}
+
+.woo-counter-badge {
+	font-size: 12px;
+	font-weight: 700;
+	color: #475569;
+	background: #ffffff;
+	padding: 6px 12px;
+	border-radius: 6px;
+	border: 1px solid #e2e8f0;
+}
+
+/* Suggestions Packs */
+.woo-packs-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 18px;
+}
+
+.woo-pack-box {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	padding: 16px;
+}
+
+.woo-pack-title {
+	margin: 0 0 12px 0;
+	font-size: 14px;
+	font-weight: 700;
+	color: #0f172a;
+	border-bottom: 1px solid #e2e8f0;
+	padding-bottom: 8px;
+}
+
+.woo-pack-items {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.woo-pack-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 12px;
+	background: #ffffff;
+	padding: 6px 10px;
+	border-radius: 6px;
+	border: 1px solid #f1f5f9;
+}
+
+.woo-status-active {
+	color: #059669;
+	font-weight: 700;
+	font-size: 11px;
+}
+
+/* Barre de progression */
+.woo-progress-container {
+	margin: 12px 0;
+}
+
+.woo-progress-bar {
+	width: 100%;
+	height: 10px;
+	background: #e2e8f0;
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.woo-progress-fill {
+	height: 100%;
+	background: #059669;
+	transition: width 0.2s ease;
+}
+
+.woo-progress-text {
+	font-size: 12px;
+	font-weight: 700;
+	color: #334155;
+	margin-top: 4px;
+	text-align: right;
+}
+
+/* Liste technique */
+.woo-tech-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 12px;
+	color: #475569;
+}
+
+.woo-tech-list li {
+	padding: 6px 0;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.woo-tech-list li:last-child {
+	border-bottom: none;
+}
+
+.woo-tech-list code {
+	background: #f1f5f9;
+	color: #0f172a;
+	padding: 2px 5px;
+	border-radius: 4px;
+	font-size: 11px;
+}
+
+/* Pagination */
+.woo-pagination {
+	margin-top: 20px;
+	display: flex;
+	justify-content: center;
+	gap: 4px;
+}
+
+.woo-pagination .page-numbers {
+	padding: 6px 12px;
+	border: 1px solid #cbd5e1;
+	border-radius: 6px;
+	text-decoration: none;
+	font-size: 13px;
+	font-weight: 600;
+	color: #475569;
+	background: #ffffff;
+}
+
+.woo-pagination .page-numbers.current {
+	background: #059669;
+	color: #ffffff;
+	border-color: #059669;
+}
+
+/* Notification Toast */
+.woo-toast {
+	position: fixed;
+	bottom: 30px;
+	right: 30px;
+	background: #0f172a;
+	color: #ffffff;
+	padding: 12px 20px;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	font-size: 13px;
+	font-weight: 600;
+	z-index: 999999;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	animation: wooSlideUp 0.25s ease;
+}
+
+.woo-toast.is-error {
+	background: #b91c1c;
+}
+
+@keyframes wooSlideUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
