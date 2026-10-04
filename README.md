@@ -123,6 +123,7 @@ Aucune règle client dans le cœur : chaque boutique se personnalise depuis son 
 | `woo_search_max_ids` | `int` (500) | Plafond de résultats classés |
 | `woo_search_max_categories` | `int` (3) | Catégories suggérées |
 | `woo_search_image_size` | `string` | Taille des miniatures |
+| `woo_search_synonym_placeholders` | `array $placeholders` | Placeholders d'exemple du formulaire d'ajout de synonyme |
 
 Exemples :
 

@@ -569,6 +569,27 @@ final class Woo_Search_Admin {
 			$active[ Woo_Search_Text::fold( $rule['from'] ) . '|' . Woo_Search_Text::fold( $rule['to'] ) ] = true;
 		}
 		$packs = Woo_Search_Engine::get_recommended_packs();
+
+		/**
+		 * Filtre les exemples affichés comme placeholders dans le formulaire d'ajout de synonymes.
+		 *
+		 * @param array<string, string> $placeholders Exemples par défaut ['from' => ..., 'to' => ...].
+		 */
+		$placeholders = (array) apply_filters(
+			'woo_search_synonym_placeholders',
+			[
+				'from' => __( 'ex : basket, t-shirt', 'woo-search-intelligence-soyoo' ),
+				'to'   => __( 'ex : sneaker, polo', 'woo-search-intelligence-soyoo' ),
+			]
+		);
+
+		$placeholder_from = ! empty( $placeholders['from'] ) && is_string( $placeholders['from'] )
+			? $placeholders['from']
+			: __( 'ex : basket, t-shirt', 'woo-search-intelligence-soyoo' );
+
+		$placeholder_to = ! empty( $placeholders['to'] ) && is_string( $placeholders['to'] )
+			? $placeholders['to']
+			: __( 'ex : sneaker, polo', 'woo-search-intelligence-soyoo' );
 		?>
 		<div class="woo-card">
 			<h2 class="woo-card-title">➕ <?php esc_html_e( 'Nouvelle règle', 'woo-search-intelligence-soyoo' ); ?></h2>
@@ -577,11 +598,11 @@ final class Woo_Search_Admin {
 			<form id="woo-add-synonym-form" class="woo-inline-form">
 				<div class="woo-form-group woo-flex-2">
 					<label for="woo_from_term"><?php esc_html_e( 'Quand le client recherche :', 'woo-search-intelligence-soyoo' ); ?></label>
-					<input type="text" id="woo_from_term" name="from" value="<?php echo esc_attr( $prefill_from ); ?>" placeholder="ex : toile, camion" required class="regular-text" <?php echo '' !== $prefill_from ? 'autofocus' : ''; ?>>
+					<input type="text" id="woo_from_term" name="from" value="<?php echo esc_attr( $prefill_from ); ?>" placeholder="<?php echo esc_attr( $placeholder_from ); ?>" required class="regular-text" <?php echo '' !== $prefill_from ? 'autofocus' : ''; ?>>
 				</div>
 				<div class="woo-form-group woo-flex-2">
 					<label for="woo_to_term"><?php esc_html_e( 'Chercher aussi / à la place :', 'woo-search-intelligence-soyoo' ); ?></label>
-					<input type="text" id="woo_to_term" name="to" value="<?php echo esc_attr( $prefill_to ); ?>" placeholder="ex : bâche, remorque" required class="regular-text">
+					<input type="text" id="woo_to_term" name="to" value="<?php echo esc_attr( $prefill_to ); ?>" placeholder="<?php echo esc_attr( $placeholder_to ); ?>" required class="regular-text">
 				</div>
 				<div class="woo-form-group woo-flex-15">
 					<label for="woo_rule_type"><?php esc_html_e( 'Comportement :', 'woo-search-intelligence-soyoo' ); ?></label>

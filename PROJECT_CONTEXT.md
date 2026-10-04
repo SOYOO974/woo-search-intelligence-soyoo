@@ -87,7 +87,7 @@ Extension in-house unique, universelle, autonome et compatible WooCommerce HPOS,
 - `uninstall.php` : purge complète (tables, options, transients `wsi_*`) uniquement si `delete_data_on_uninstall` est activé.
 
 ### 8. Découplage métier par hooks
-Aucune règle client dans le cœur. Chaque boutique personnalise depuis son thème : `woo_search_normalize_query`, `woo_search_accent_map`, `woo_search_default_synonyms`, `woo_search_recommended_packs`, `woo_search_stop_words`, `woo_search_stem_exceptions`, `woo_search_title_acronyms`, `woo_search_index_taxonomies`, `woo_search_index_data`, `woo_search_ajax_actions`, `woo_search_live_response`, `woo_search_is_bot`, `woo_search_max_ids`, `woo_search_max_categories`, `woo_search_image_size`.
+Aucune règle client dans le cœur. Chaque boutique personnalise depuis son thème : `woo_search_normalize_query`, `woo_search_accent_map`, `woo_search_default_synonyms`, `woo_search_recommended_packs`, `woo_search_stop_words`, `woo_search_stem_exceptions`, `woo_search_title_acronyms`, `woo_search_index_taxonomies`, `woo_search_index_data`, `woo_search_ajax_actions`, `woo_search_live_response`, `woo_search_is_bot`, `woo_search_max_ids`, `woo_search_max_categories`, `woo_search_image_size`, `woo_search_synonym_placeholders`.
 Les normalisations historiques MFM (dimensions `2x3`) et Jardin Naturel (contenances `500g`) sont désormais couvertes nativement par `fold()`.
 
 ### 9. Mises à Jour Automatiques via GitHub Releases & PUC v5.6
