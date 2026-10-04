@@ -17,7 +17,7 @@ Des implémentations partielles avaient été directement injectées dans les th
 Extension in-house unique, universelle, autonome et compatible WooCommerce HPOS, qui centralise la recherche e-commerce (moteur + mesure + pilotage) pour l'ensemble des clients SOYOO.
 
 - **Slug** : `woo-search-intelligence-soyoo`
-- **Version** : 1.1.0 (schéma de base de données v2)
+- **Version** : 1.1.1 (schéma de base de données v2)
 - **Dépôt GitHub** : [`https://github.com/SOYOO974/woo-search-intelligence-soyoo.git`](https://github.com/SOYOO974/woo-search-intelligence-soyoo.git)
 - **Branche principale** : `main`
 - **Mécanisme de mise à jour** : Plugin Update Checker (PUC v5.6) connecté aux Releases GitHub (`enableReleaseAssets()`)

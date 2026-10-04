@@ -740,12 +740,15 @@ final class Woo_Search_Admin {
 				<div class="woo-kpi-val"><?php echo esc_html( number_format_i18n( $kpis['total_searches'] ) ); ?></div>
 				<div class="woo-kpi-sub"><?php echo esc_html( $period ); ?></div>
 			</div>
-			<div class="woo-kpi-card">
-				<div class="woo-kpi-label"><?php esc_html_e( 'Sans résultat', 'woo-search-intelligence-soyoo' ); ?></div>
+			<a href="<?php echo esc_url( $this->tab_url( 'zero_results', [ 'range' => $days ] ) ); ?>" class="woo-kpi-card woo-kpi-card-link" title="<?php esc_attr_e( 'Voir les recherches sans résultat', 'woo-search-intelligence-soyoo' ); ?>">
+				<div class="woo-kpi-label">
+					<span><?php esc_html_e( 'Sans résultat', 'woo-search-intelligence-soyoo' ); ?></span>
+					<span class="woo-kpi-arrow" aria-hidden="true">&rarr;</span>
+				</div>
 				<div class="woo-kpi-val <?php echo $kpis['zero_rate'] > 10 ? 'is-bad' : ''; ?>"><?php echo esc_html( number_format_i18n( $kpis['zero_rate'], 1 ) ); ?> %</div>
 				<?php /* translators: %s: nombre */ ?>
 				<div class="woo-kpi-sub"><?php echo esc_html( sprintf( __( '%s recherches', 'woo-search-intelligence-soyoo' ), number_format_i18n( $kpis['zero_count'] ) ) ); ?></div>
-			</div>
+			</a>
 			<div class="woo-kpi-card">
 				<div class="woo-kpi-label"><?php esc_html_e( 'Résultats approchés', 'woo-search-intelligence-soyoo' ); ?></div>
 				<div class="woo-kpi-val"><?php echo esc_html( number_format_i18n( $kpis['approx_rate'], 1 ) ); ?> %</div>

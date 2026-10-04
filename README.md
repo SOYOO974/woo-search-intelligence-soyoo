@@ -1,7 +1,7 @@
 # WooCommerce Search Intelligence by SOYOO
 
 Moteur de recherche e-commerce propriétaire pour WooCommerce, conçu et maintenu par **SOYOO**.
-Version actuelle : **1.1.0** — PHP 8.1+, WordPress 6.5+, WooCommerce 8.0+, compatible HPOS.
+Version actuelle : **1.1.1** — PHP 8.1+, WordPress 6.5+, WooCommerce 8.0+, compatible HPOS.
 
 ---
 
@@ -187,6 +187,10 @@ powershell -ExecutionPolicy Bypass -File .\bin\build-zip.ps1
 ---
 
 ## 📝 Changelog
+
+### 1.1.1
+- Rendu de la carte KPI « Sans résultat » (onglet Statistiques) cliquable pour accéder directement à l'onglet « 0 Résultat & Opportunités » en conservant la période filtrée active.
+- Micro-interaction visuelle sur la carte KPI cliquable (élévation au survol, flèche indicatrice animée).
 
 ### 1.1.0
 - Index dédié `woo_search_index` mis à jour en continu + reconstruction par lots (Action Scheduler / admin).
