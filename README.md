@@ -125,6 +125,7 @@ Aucune règle client dans le cœur : chaque boutique se personnalise depuis son 
 | `woo_search_max_categories` | `int` (3) | Catégories suggérées |
 | `woo_search_image_size` | `string` | Taille des miniatures |
 | `woo_search_synonym_placeholders` | `array $placeholders` | Placeholders d'exemple du formulaire d'ajout de synonyme |
+| `woo_search_ignored_query_params` | `array $keys` | Paramètres GET de facettes/filtres ignorés par le tracking (exact ou wildcard `*`) |
 
 Exemples :
 
@@ -150,6 +151,11 @@ add_filter( 'woo_search_default_synonyms', function ( array $rules ): array {
 add_filter( 'woo_search_is_bot', function ( bool $is_bot, string $ua ): bool {
     return $is_bot || str_contains( $ua, 'MonSondeInterne' );
 }, 10, 2 );
+
+// Ignorer les filtres et facettes personnalisés d'un thème dans le tracking de recherche.
+add_filter( 'woo_search_ignored_query_params', function ( array $keys ): array {
+    return array_merge( $keys, [ 'cdc_cat', 'cdc_brand', 'cdc_stock', 'cdc_*' ] );
+} );
 ```
 
 ---
@@ -189,6 +195,18 @@ powershell -ExecutionPolicy Bypass -File .\bin\build-zip.ps1
 ---
 
 ## 📝 Changelog
+
+### 1.2.1
+- Ajout du filtre `woo_search_ignored_query_params` et de la méthode `Woo_Search_Tracker::is_ignored_refinement_query()` : permet aux thèmes d'exclure leurs paramètres personnalisés de facettes et de filtres (ex: `cdc_cat`, `cdc_brand`, `cdc_stock`, ou motifs avec joker `cdc_*`) pour éviter les faux ré-enregistrements de recherches lors des affinages de catalogue.
+
+### 1.2.0
+- Intégration et compatibilité native avec le live search AJAX WoodMart (`woodmart_ajax_search`) et mesure complète des clics associés.
+
+### 1.1.3
+- Rétrocompatibilité PHP 7.4.33 et shims polyfill pour `str_starts_with`, `str_ends_with` et `str_contains`.
+
+### 1.1.2
+- Harmonisation universelle des placeholders de synonymes via le filtre `woo_search_synonym_placeholders`.
 
 ### 1.1.1
 - Rendu de la carte KPI « Sans résultat » (onglet Statistiques) cliquable pour accéder directement à l'onglet « 0 Résultat & Opportunités » en conservant la période filtrée active.

@@ -130,14 +130,8 @@ final class Woo_Search_Tracker {
 		}
 
 		// Pagination, tri et filtres = affinage d'une recherche déjà comptée.
-		if ( is_paged() ) {
+		if ( is_paged() || self::is_ignored_refinement_query() ) {
 			return;
-		}
-		foreach ( array_keys( $_GET ) as $key ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$key = (string) $key;
-			if ( in_array( $key, [ 'orderby', 'min_price', 'max_price', 'rating_filter' ], true ) || str_starts_with( $key, 'filter_' ) || str_starts_with( $key, 'query_type_' ) ) {
-				return;
-			}
 		}
 
 		if ( ! self::should_track() ) {
@@ -175,6 +169,52 @@ final class Woo_Search_Tracker {
 		$parts = wp_parse_url( $url );
 		$path  = isset( $parts['path'] ) ? untrailingslashit( (string) $parts['path'] ) : '';
 		return ( $parts['host'] ?? '' ) . $path;
+	}
+
+	/**
+	 * Détermine si la requête courante (ou le jeu de paramètres fourni) contient des clés de facettes,
+	 * de tri ou d'affinage qui ne doivent pas être comptabilisées comme une nouvelle recherche.
+	 *
+	 * @param array<string, mixed>|null $query_params Paramètres de requête (défaut : $_GET).
+	 * @return bool
+	 */
+	public static function is_ignored_refinement_query( ?array $query_params = null ): bool {
+		$params = null !== $query_params ? $query_params : $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( empty( $params ) ) {
+			return false;
+		}
+
+		/**
+		 * Clés de requête GET (ou préfixes terminés par *) indiquant un affinage ou un filtre (recherche déjà comptée).
+		 *
+		 * @param array<int, string> $ignored_keys Paramètres ou préfixes ignorés par défaut.
+		 */
+		$ignored_keys   = (array) apply_filters( 'woo_search_ignored_query_params', [ 'orderby', 'min_price', 'max_price', 'rating_filter' ] );
+		$exact_ignored  = [];
+		$prefix_ignored = [ 'filter_', 'query_type_' ];
+
+		foreach ( $ignored_keys as $ignored ) {
+			$ignored = (string) $ignored;
+			if ( str_ends_with( $ignored, '*' ) ) {
+				$prefix_ignored[] = substr( $ignored, 0, -1 );
+			} else {
+				$exact_ignored[] = $ignored;
+			}
+		}
+
+		foreach ( array_keys( $params ) as $key ) {
+			$key = (string) $key;
+			if ( in_array( $key, $exact_ignored, true ) ) {
+				return true;
+			}
+			foreach ( $prefix_ignored as $prefix ) {
+				if ( str_starts_with( $key, $prefix ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/* ---------------------------------------------------------------------

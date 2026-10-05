@@ -10,7 +10,7 @@
 >    - Toute évolution ou correction de bug doit obligatoirement être réalisée et versionnée au sein de ce dépôt dédié.
 > 2. **Découplage Métier par Hooks** :
 >    - Ne jamais réintroduire de règles spécifiques à un client (ex: regex de dimensions MFM ou contenances Jardin Naturel) en dur dans le cœur du plugin.
->    - Utiliser systématiquement les filtres `woo_search_normalize_query`, `woo_search_default_synonyms`, `woo_search_accent_map`, `woo_search_is_bot`, `woo_search_index_data`, `woo_search_index_taxonomies` et `woo_search_ajax_actions` (alias AJAX des thèmes, jamais en dur dans le cœur). Liste complète dans `README.md`.
+>    - Utiliser systématiquement les filtres `woo_search_normalize_query`, `woo_search_default_synonyms`, `woo_search_accent_map`, `woo_search_is_bot`, `woo_search_index_data`, `woo_search_index_taxonomies`, `woo_search_ajax_actions` et `woo_search_ignored_query_params` (paramètres GET de facettes thèmes ignorés). Liste complète dans `README.md`.
 
 ---
 
