@@ -387,6 +387,7 @@ final class Woo_Search_Admin {
 						$this->number_field( $engine, 'min_chars', __( 'Nombre minimal de caractères', 'woo-search-intelligence-soyoo' ), 1, 5, __( 'Recommandé : 2.', 'woo-search-intelligence-soyoo' ) );
 						$this->number_field( $engine, 'max_results', __( 'Produits affichés dans le live search', 'woo-search-intelligence-soyoo' ), 3, 20, __( 'Recommandé : 6.', 'woo-search-intelligence-soyoo' ) );
 						$this->checkbox( $engine, 'integrate_search_page', __( 'Utiliser le moteur sur la page de résultats complète', 'woo-search-intelligence-soyoo' ), __( 'Garantit les mêmes résultats dans la liste déroulante et sur la page « Voir tous les résultats ».', 'woo-search-intelligence-soyoo' ) );
+						$this->checkbox( $engine, 'enable_woodmart_integration', __( 'Intégration native WoodMart', 'woo-search-intelligence-soyoo' ), __( 'Intercepte automatiquement le live search AJAX du thème WoodMart pour injecter la pertinence SOYOO, la correction orthographique, le scoring par stock et la mesure des clics.', 'woo-search-intelligence-soyoo' ) );
 						$this->checkbox( $engine, 'enable_sku_variations', __( 'Recherche par SKU / EAN (parents et variations)', 'woo-search-intelligence-soyoo' ), __( 'SKU exact : priorité maximale. Début de SKU : seulement si la saisie contient un chiffre (≥ 3 caractères).', 'woo-search-intelligence-soyoo' ) );
 						$this->checkbox( $engine, 'search_in_terms', __( 'Rechercher dans les catégories, marques, étiquettes et attributs', 'woo-search-intelligence-soyoo' ), __( 'Ex. « bâche verte » trouve un produit dont « verte » est une valeur d\'attribut.', 'woo-search-intelligence-soyoo' ) );
 						$this->checkbox( $engine, 'search_in_excerpt', __( 'Rechercher dans la description courte', 'woo-search-intelligence-soyoo' ) );
@@ -1081,6 +1082,7 @@ final class Woo_Search_Admin {
 			'search_in_excerpt'          => $bool( 'search_in_excerpt' ),
 			'search_in_terms'            => $bool( 'search_in_terms' ),
 			'integrate_search_page'      => $bool( 'integrate_search_page' ),
+			'enable_woodmart_integration' => $bool( 'enable_woodmart_integration' ),
 			'enable_spellcheck'          => $bool( 'enable_spellcheck' ),
 			'enable_partial_fallback'    => $bool( 'enable_partial_fallback' ),
 			'show_images'                => $bool( 'show_images' ),

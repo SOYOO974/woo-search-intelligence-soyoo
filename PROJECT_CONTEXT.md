@@ -17,7 +17,7 @@ Des implémentations partielles avaient été directement injectées dans les th
 Extension in-house unique, universelle, autonome et compatible WooCommerce HPOS, qui centralise la recherche e-commerce (moteur + mesure + pilotage) pour l'ensemble des clients SOYOO.
 
 - **Slug** : `woo-search-intelligence-soyoo`
-- **Version** : 1.1.3 (schéma de base de données v2)
+- **Version** : 1.2.0 (schéma de base de données v2)
 - **Dépôt GitHub** : [`https://github.com/SOYOO974/woo-search-intelligence-soyoo.git`](https://github.com/SOYOO974/woo-search-intelligence-soyoo.git)
 - **Branche principale** : `main`
 - **Mécanisme de mise à jour** : Plugin Update Checker (PUC v5.6) connecté aux Releases GitHub (`enableReleaseAssets()`)
@@ -53,6 +53,7 @@ Extension in-house unique, universelle, autonome et compatible WooCommerce HPOS,
 - Cache : `wp_cache` groupe `woo_search` avec clé de génération (`woo_search_cache_gen`, incrémentée à chaque modification du catalogue/synonymes/réglages) + mémo de requête. Aucun transient par frappe.
 - Endpoint public `?wc-ajax=woo_live_search&term=` (+ `wp_ajax`), court-circuit `posts_pre_query` pour éviter la requête principale inutile. Actions additionnelles via `woo_search_ajax_actions` (alias de thème, **plus aucun alias client en dur**). Réponse enrichissable via `woo_search_live_response`.
 - Intégration page de résultats : `pre_get_posts` (priorité 1000) sur la requête principale de recherche produit → `post__in` ordonné, recherche native neutralisée (`posts_search`, `posts_search_orderby`), tri explicite WooCommerce respecté, bandeau de correction.
+- **Intégration native WoodMart (v1.2.0)** : interception de l'action AJAX propriétaire `woodmart_ajax_search` via `pre_get_posts` (priorité 20), injection ordonnée des résultats (`post__in`), neutralisation du SQL natif (`wsi_engine = 1`), journalisation temps réel de la recherche (source `ajax`) avec `search_uid`, et injection dynamique du fragment `#wsi=<uid>.<pid>.<pos>` via le filtre `post_type_link` pour assurer la mesure du CTR et l'attribution des ventes. Configurable via l'option `enable_woodmart_integration` (active par défaut).
 - Catégories suggérées : transient unique `wsi_cats` versionné.
 - Synonymes : option `woo_search_synonyms`, identifiants UUID stables, amorçage initial via `woo_search_default_synonyms`, packs via `woo_search_recommended_packs`.
 

@@ -1,7 +1,7 @@
 # WooCommerce Search Intelligence by SOYOO
 
 Moteur de recherche e-commerce propriétaire pour WooCommerce, conçu et maintenu par **SOYOO**.
-Version actuelle : **1.1.3** — PHP 7.4+, WordPress 6.5+, WooCommerce 8.0+, compatible HPOS.
+Version actuelle : **1.2.0** — PHP 7.4+, WordPress 6.5+, WooCommerce 8.0+, compatible HPOS.
 
 ---
 
@@ -31,6 +31,7 @@ Le plugin remplace ce moteur par un index dédié, le branche sur le live search
 - **Classement** : SKU exact > début de SKU (si la saisie contient un chiffre, ≥ 3 caractères) > titre exact > titre commençant par la requête > phrase dans le titre > tous les mots dans le titre > mots dans catégories/attributs/extrait > en stock > ventes.
 - **Synonymes** : *Expansion* (le terme OU son équivalent) et *Remplacement* (réécriture), identifiants stables, packs suggérés.
 - **Intégration de la page de résultats** (`?s=…&post_type=product`) : mêmes produits et même ordre que le live search, tri WooCommerce explicite respecté, bandeau « Résultats pour … » en cas de correction.
+- **Support natif WoodMart** (`woodmart_ajax_search`) : injection automatique de la pertinence SOYOO dans le dropdown AJAX du thème WoodMart, scoring complet et fragments `#wsi=...` pour la mesure des clics.
 - **Cache** : object cache (Redis) si disponible, invalidation par génération à chaque modification du catalogue ou des synonymes. Aucun transient par frappe dans `wp_options`.
 
 ### Mesure

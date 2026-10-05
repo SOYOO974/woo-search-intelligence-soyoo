@@ -49,6 +49,7 @@ final class Woo_Search_Installer {
 			'search_in_excerpt'          => 1,
 			'search_in_terms'            => 1,
 			'integrate_search_page'      => 1,
+			'enable_woodmart_integration' => 1,
 			'enable_spellcheck'          => 1,
 			'enable_partial_fallback'    => 1,
 			'show_images'                => 1,

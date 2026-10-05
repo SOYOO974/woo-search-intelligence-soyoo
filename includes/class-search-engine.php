@@ -57,6 +57,15 @@ final class Woo_Search_Engine {
 	 */
 	private ?array $page_result = null;
 
+	private string $current_ajax_uid = '';
+
+	/**
+	 * IDs des produits renvoyés par la recherche AJAX courante (pour le calcul de position des clics).
+	 *
+	 * @var array<int, int>
+	 */
+	private array $current_ajax_ids = [];
+
 	public static function instance(): self {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -71,6 +80,7 @@ final class Woo_Search_Engine {
 		add_action( 'init', [ $this, 'maybe_seed_synonyms' ], 20 );
 
 		add_action( 'pre_get_posts', [ $this, 'integrate_search_page' ], 1000 );
+		add_action( 'pre_get_posts', [ $this, 'integrate_woodmart_ajax_search' ], 20 );
 		add_filter( 'posts_search', [ $this, 'neutralize_native_search' ], 1000, 2 );
 		add_filter( 'posts_search_orderby', [ $this, 'neutralize_native_search' ], 1000, 2 );
 		add_filter( 'posts_pre_query', [ $this, 'short_circuit_ajax_main_query' ], 10, 2 );
@@ -336,6 +346,85 @@ final class Woo_Search_Engine {
 			$query->set( 'orderby', 'post__in' );
 			$query->set( 'order', 'ASC' );
 		}
+	}
+
+	/**
+	 * Intercepte la requête de recherche AJAX propre au thème WoodMart (woodmart_ajax_search)
+	 * pour injecter les résultats calculés par Woo Search Intelligence et préparer le suivi des clics.
+	 *
+	 * @param WP_Query $query Requête WordPress.
+	 */
+	public function integrate_woodmart_ajax_search( WP_Query $query ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! wp_doing_ajax() || ! isset( $_REQUEST['action'] ) || 'woodmart_ajax_search' !== $_REQUEST['action'] ) {
+			return;
+		}
+
+		if ( ! $this->opt( 'enable_woodmart_integration' ) || ! Woo_Search_Indexer::instance()->is_ready() ) {
+			return;
+		}
+
+		if ( ! $query->is_search() ) {
+			return;
+		}
+
+		$post_type  = $query->get( 'post_type' );
+		$is_product = 'product' === $post_type || ( is_array( $post_type ) && [ 'product' ] === array_values( $post_type ) );
+		if ( ! $is_product ) {
+			return;
+		}
+
+		$raw = trim( wp_unslash( (string) $query->get( 's' ) ) );
+		if ( '' === $raw ) {
+			return;
+		}
+
+		$result = $this->search( $raw, [ 'live' => true ] );
+		$uid    = Woo_Search_Tracker::new_uid();
+
+		Woo_Search_Tracker::log_search( $raw, (int) $result['total'], [
+			'source'    => 'ajax',
+			'mode'      => $result['mode'],
+			'corrected' => $result['corrected'],
+			'uid'       => $uid,
+		] );
+
+		$this->current_ajax_uid = $uid;
+		$this->current_ajax_ids = $result['ids'];
+
+		$ids = ! empty( $result['ids'] ) ? $result['ids'] : [ 0 ];
+		$query->set( 'post__in', $ids );
+		$query->set( 'orderby', 'post__in' );
+		$query->set( 'order', 'ASC' );
+		$query->set( 'wsi_engine', 1 );
+
+		add_filter( 'post_type_link', [ $this, 'append_woodmart_wsi_fragment' ], 20, 2 );
+	}
+
+	/**
+	 * Ajoute le fragment #wsi=… aux permaliens des produits dans le live search WoodMart
+	 * pour assurer le suivi des clics et l'attribution des commandes.
+	 *
+	 * @param string  $permalink Permalien d'origine.
+	 * @param WP_Post $post      Objet post.
+	 * @return string
+	 */
+	public function append_woodmart_wsi_fragment( string $permalink, WP_Post $post ): string {
+		if ( '' === $this->current_ajax_uid || 'product' !== $post->post_type ) {
+			return $permalink;
+		}
+
+		if ( ! $this->opt( 'enable_click_tracking' ) ) {
+			return $permalink;
+		}
+
+		$index = array_search( (int) $post->ID, $this->current_ajax_ids, true );
+		if ( false === $index ) {
+			return $permalink;
+		}
+
+		$position = (int) $index + 1;
+		return $permalink . '#wsi=' . $this->current_ajax_uid . '.' . $post->ID . '.' . $position;
 	}
 
 	/**
