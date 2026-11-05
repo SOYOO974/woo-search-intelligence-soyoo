@@ -1032,6 +1032,28 @@ final class Woo_Search_Admin {
 		) );
 		// phpcs:enable
 
+		$rows = is_array( $rows ) ? $rows : [];
+		if ( 'zero' === $type && ! empty( $rows ) ) {
+			$engine = Woo_Search_Engine::instance();
+			foreach ( $rows as $r ) {
+				$status           = $engine->search( (string) $r->normalized_query );
+				$r->current_total = (int) ( $status['total'] ?? 0 );
+				$r->is_resolved   = $r->current_total > 0;
+			}
+			usort(
+				$rows,
+				static function ( object $a, object $b ): int {
+					if ( $a->is_resolved !== $b->is_resolved ) {
+						return $a->is_resolved <=> $b->is_resolved;
+					}
+					if ( (int) $a->qty !== (int) $b->qty ) {
+						return (int) $b->qty <=> (int) $a->qty;
+					}
+					return (int) $b->visitors <=> (int) $a->visitors;
+				}
+			);
+		}
+
 		nocache_headers();
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename="recherches-' . $type . '-' . gmdate( 'Y-m-d' ) . '.csv"' );
@@ -1041,11 +1063,16 @@ final class Woo_Search_Admin {
 			exit;
 		}
 		fwrite( $out, "\xEF\xBB\xBF" );
-		fputcsv( $out, [ 'Terme', 'Recherches', 'Visiteurs', 'Produits (moyenne)', 'CTR %', 'Commandes', 'CA attribué', 'Dernière recherche' ], ';', '"', '' );
+		$headers = [ 'Terme', 'Recherches', 'Visiteurs', 'Produits (moyenne)', 'CTR %', 'Commandes', 'CA attribué', 'Dernière recherche' ];
+		if ( 'zero' === $type ) {
+			$headers[] = 'Statut actuel';
+			$headers[] = "Produits trouvés aujourd'hui";
+		}
+		fputcsv( $out, $headers, ';', '"', '' );
 
-		foreach ( (array) $rows as $r ) {
+		foreach ( $rows as $r ) {
 			$trackable = (int) $r->trackable;
-			fputcsv( $out, [
+			$line      = [
 				self::csv_cell( (string) $r->normalized_query ),
 				(int) $r->qty,
 				(int) $r->visitors,
@@ -1054,7 +1081,12 @@ final class Woo_Search_Admin {
 				(int) $r->orders,
 				number_format( (float) $r->revenue, 2, ',', '' ),
 				get_date_from_gmt( (string) $r->last_seen, 'Y-m-d H:i' ),
-			], ';', '"', '' );
+			];
+			if ( 'zero' === $type ) {
+				$line[] = ! empty( $r->is_resolved ) ? 'Résolu' : '0 résultat';
+				$line[] = (int) ( $r->current_total ?? 0 );
+			}
+			fputcsv( $out, $line, ';', '"', '' );
 		}
 
 		fclose( $out );

@@ -1,7 +1,7 @@
 # WooCommerce Search Intelligence by SOYOO
 
 Moteur de recherche e-commerce propriétaire pour WooCommerce, conçu et maintenu par **SOYOO**.
-Version actuelle : **1.2.0** — PHP 7.4+, WordPress 6.5+, WooCommerce 8.0+, compatible HPOS.
+Version actuelle : **1.2.2** — PHP 7.4+, WordPress 6.5+, WooCommerce 8.0+, compatible HPOS.
 
 ---
 
@@ -195,6 +195,9 @@ powershell -ExecutionPolicy Bypass -File .\bin\build-zip.ps1
 ---
 
 ## 📝 Changelog
+
+### 1.2.2
+- Export CSV « 0 résultat » (`woo_export=zero`) : ré-évaluation en direct de chaque terme via `Woo_Search_Engine::search()`, ajout des colonnes `Statut actuel` (`Résolu` / `0 résultat`) et `Produits trouvés aujourd'hui`, et tri prioritaire des termes toujours à 0 résultat aujourd'hui.
 
 ### 1.2.1
 - Ajout du filtre `woo_search_ignored_query_params` et de la méthode `Woo_Search_Tracker::is_ignored_refinement_query()` : permet aux thèmes d'exclure leurs paramètres personnalisés de facettes et de filtres (ex: `cdc_cat`, `cdc_brand`, `cdc_stock`, ou motifs avec joker `cdc_*`) pour éviter les faux ré-enregistrements de recherches lors des affinages de catalogue.
